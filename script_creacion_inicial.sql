@@ -18,6 +18,12 @@ DROP TABLE LOS_BORBOTONES.VUELO;
 IF OBJECT_ID('LOS_BORBOTONES.RUTA_AEREA') IS NOT NULL
 DROP TABLE LOS_BORBOTONES.RUTA_AEREA;
 
+IF OBJECT_ID('LOS_BORBOTONES.CIUDAD') IS NOT NULL
+DROP TABLE LOS_BORBOTONES.CIUDAD;
+
+IF OBJECT_ID('LOS_BORBOTONES.CIUDAD_X_RUTA_AEREA') IS NOT NULL
+DROP TABLE LOS_BORBOTONES.CIUDAD_X_RUTA_AEREA;
+
 IF OBJECT_ID('LOS_BORBOTONES.AVION') IS NOT NULL
 DROP TABLE LOS_BORBOTONES.AVION;
 
@@ -57,7 +63,7 @@ IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'LOS_BORBOTONES')
   END
 GO
 
-/* CREO TABLAS (FALTARÍA LA TABLA CIUDAD) */
+/* CREO TABLAS */
 
 CREATE TABLE LOS_BORBOTONES.CLIENTE (
 		cliente_apellido nvarchar(255),
@@ -66,6 +72,8 @@ CREATE TABLE LOS_BORBOTONES.CLIENTE (
 		cliente_fecha_nac datetime2(3),
 		cliente_mail nvarchar(255),
 		cliente_telefono decimal(18,0)
+
+		CONSTRAINT PK_CLIENTE_DNI PRIMARY KEY (cliente_dni)
 )
 
 CREATE TABLE LOS_BORBOTONES.SUCURSAL (
@@ -74,11 +82,15 @@ CREATE TABLE LOS_BORBOTONES.SUCURSAL (
 		sucursal_direccion nvarchar(255),
 		sucursal_mail nvarchar(255),
 		sucursal_telefono decimal(18,0)
+
+		CONSTRAINT PK_SUCURSAL_ID PRIMARY KEY (sucursal_id)
 )
 
 CREATE TABLE LOS_BORBOTONES.AEROLINEA (
 		aerolinea_codigo nvarchar(255),
 		aerolinea_razon_social nvarchar(255)
+
+		CONSTRAINT PK_AEROLINEA_CODIGO PRIMARY KEY (aerolinea_codigo)
 )
 
 CREATE TABLE LOS_BORBOTONES.VUELO (
@@ -90,7 +102,12 @@ CREATE TABLE LOS_BORBOTONES.VUELO (
 		vuelo_ruta_aerea_ciu_origen nvarchar(255),
 		vuelo_ruta_aerea_ciu_destino nvarchar(255),
 		vuelo_aerolinea_codigo nvarchar(255)
+
+		CONSTRAINT PK_VUELO_CODIGO PRIMARY KEY (vuelo_codigo),
+		CONSTRAINT FK_VUELO_AVION_ID FOREIGN KEY (vuelo_avion_id) REFERENCES LOS_BORBOTONES.AVION(avion_id)
 )
+
+/* FALTARÍA DETERMINAR LA PK MÚLTIPLE Y LAS FK DE RUTA_AREA, CIUDAD Y CIUDAD_X_RUTA_AEREA */
 
 CREATE TABLE LOS_BORBOTONES.RUTA_AEREA (
 		ruta_aerea_codigo decimal(18,0),
@@ -98,9 +115,23 @@ CREATE TABLE LOS_BORBOTONES.RUTA_AEREA (
 		ruta_aerea_ciu_destino nvarchar(255)
 )
 
+CREATE TABLE LOS_BORBOTONES.CIUDAD (
+		ciudad_codigo nvarchar(255),
+		ciudad_detalle nvarchar(255)
+
+		CONSTRAINT PK_CIUDAD_CODIGO PRIMARY KEY (ciudad_codigo)
+)
+
+CREATE TABLE LOS_BORBOTONES.CIUDAD_X_RUTA_AEREA (
+		ciu_x_rut_aer_ciudad_codigo nvarchar(255),
+		ciu_x_rut_aer_ruta_aerea_codigo decimal(18,0)
+)
+
 CREATE TABLE LOS_BORBOTONES.AVION (
 		avion_id nvarchar(50),
 		avion_modelo nvarchar(50)
+
+		CONSTRAINT PK_AVION_ID PRIMARY KEY (avion_id)
 )
 
 CREATE TABLE LOS_BORBOTONES.BUTACA (
@@ -108,16 +139,24 @@ CREATE TABLE LOS_BORBOTONES.BUTACA (
 		butaca_numero decimal(18,0),
 		butaca_tipo_butaca_codigo nvarchar(50),
 		butaca_avion_id nvarchar(50)
+
+		CONSTRAINT PK_BUTACA_ID PRIMARY KEY (butaca_id),
+		CONSTRAINT FK_BUTACA_TIPO_BUTACA_CODIGO FOREIGN KEY (butaca_tipo_butaca_codigo) REFERENCES LOS_BORBOTONES.TIPO_BUTACA(tipo_butaca_codigo),
+		CONSTRAINT FK_BUTACA_AVION_ID FOREIGN KEY (butaca_avion_id) REFERENCES LOS_BORBOTONES.AVION(avion_id)
 )
 
 CREATE TABLE LOS_BORBOTONES.TIPO_BUTACA (
 		tipo_butaca_codigo nvarchar(50),
 		tipo_butaca_detalle nvarchar(50)
+
+		CONSTRAINT PK_TIPO_BUTACA_CODIGO PRIMARY KEY (tipo_butaca_codigo)
 )
 
 CREATE TABLE LOS_BORBOTONES.GRUPO_HOTELARIO (
 		grupo_hotelario_codigo nvarchar(255),
 		grupo_hotelario_razon_social nvarchar(255)
+
+		CONSTRAINT PK_GRUPO_HOTELARIO_CODIGO PRIMARY KEY (grupo_hotelario_codigo)
 )
 
 CREATE TABLE LOS_BORBOTONES.HOTEL (
@@ -126,7 +165,12 @@ CREATE TABLE LOS_BORBOTONES.HOTEL (
 		hotel_nro_calle decimal(18,0),
 		hotel_cantidad_estrellas decimal(18,0),
 		hotel_grupo_hotelario_codigo nvarchar(255)
+
+		CONSTRAINT PK_HOTEL_CODIGO PRIMARY KEY (hotel_codigo)
+		CONSTRAINT FK_HOTEL_GRUPO_HOTELARIO_CODIGO FOREIGN KEY (hotel_grupo_hotelario_codigo) REFERENCES LOS_BORBOTONES.GRUPO_HOTELARIO(grupo_hotelario_codigo)
 )
+
+/* FALTARÍA DETERMINAR LA PK MÚLTIPLE Y LA FK DE HABITACIÓN */
 
 CREATE TABLE LOS_BORBOTONES.HABITACION (
 		habitacion_numero decimal(18,0),
@@ -141,6 +185,8 @@ CREATE TABLE LOS_BORBOTONES.HABITACION (
 CREATE TABLE LOS_BORBOTONES.TIPO_HABITACION (
 		tipo_habitacion_codigo decimal(18,0),
 		tipo_habitacion_detalle nvarchar(255)
+
+		CONSTRAINT PK_TIPO_HABITACION_CODIGO PRIMARY KEY (tipo_habitacion_codigo)
 )
 
 CREATE TABLE LOS_BORBOTONES.PASAJE (
@@ -151,6 +197,12 @@ CREATE TABLE LOS_BORBOTONES.PASAJE (
 		pasaje_butaca_id nvarchar(255),
 		pasaje_factura_numero decimal(18,0),
 		pasaje_compra_numero decimal(18,0)
+
+		CONSTRAINT PK_PASAJE_CODIGO PRIMARY KEY (pasaje_codigo)
+		CONSTRAINT FK_PASAJE_VUELO_CODIGO FOREIGN KEY (pasaje_vuelo_codigo) REFERENCES LOS_BORBOTONES.VUELO(vuelo_codigo),
+		CONSTRAINT FK_PASAJE_BUTACA_ID FOREIGN KEY (pasaje_butaca_id) REFERENCES LOS_BORBOTONES.BUTACA(butaca_id),
+		CONSTRAINT FK_PASAJE_FACTURA_NUMERO FOREIGN KEY (pasaje_factura_numero) REFERENCES LOS_BORBOTONES.FACTURA(factura_numero),
+		CONSTRAINT FK_PASAJE_COMPRA_NUMERO FOREIGN KEY (pasaje_compra_numero) REFERENCES LOS_BORBOTONES.COMPRA_EMPRESA_TURISMO(compra_empr_numero)
 )
 
 CREATE TABLE LOS_BORBOTONES.ESTADIA (
@@ -160,6 +212,10 @@ CREATE TABLE LOS_BORBOTONES.ESTADIA (
 		estadia_hotel_codigo nvarchar(255),
 		estadia_habitacion_numero decimal(18,0),
 		estadia_precio decimal(18,2)
+
+		CONSTRAINT PK_ESTADIA_CODIGO PRIMARY KEY (estadia_codigo)
+		CONSTRAINT FK_ESTADIA_HOTEL_CODIGO FOREIGN KEY (estadia_hotel_codigo) REFERENCES LOS_BORBOTONES.HOTEL(hotel_codigo),
+		CONSTRAINT FK_ESTADIA_HABITACION_NUMERO FOREIGN KEY (estadia_habitacion_numero) REFERENCES LOS_BORBOTONES.HABITACION(habitacion_numero)
 )
 
 CREATE TABLE LOS_BORBOTONES.FACTURA (
@@ -167,9 +223,15 @@ CREATE TABLE LOS_BORBOTONES.FACTURA (
 		factura_numero decimal(18,0),
 		factura_cliente_dni decimal(18,0),
 		factura_sucursal_id decimal(18,0)
+
+		CONSTRAINT PK_FACTURA_NUMERO PRIMARY KEY (factura_numero)
+		CONSTRAINT FK_FACTURA_CLIENTE_DNI FOREIGN KEY (factura_cliente_dni) REFERENCES LOS_BORBOTONES.CLIENTE(cliente_dni),
+		CONSTRAINT FK_FACTURA_SUCURSAL_ID FOREIGN KEY (factura_sucursal_id) REFERENCES LOS_BORBOTONES.SUCURSAL(sucursal_id)
 )
 
 CREATE TABLE LOS_BORBOTONES.COMPRA_EMPRESA_TURISMO (
 		compra_empr_numero decimal(18,0),
 		compra_empr_fecha datetime2(3)
+
+		CONSTRAINT PK_COMPRA_NUMERO PRIMARY KEY (compra_empr_numero)
 )
