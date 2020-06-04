@@ -54,6 +54,24 @@ DROP TABLE LOS_BORBOTONES.FACTURA;
 IF OBJECT_ID('LOS_BORBOTONES.COMPRA_EMPRESA_TURISMO') IS NOT NULL
 DROP TABLE LOS_BORBOTONES.COMPRA_EMPRESA_TURISMO;
 
+IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_clientes') IS NOT NULL
+DROP PROCEDURE LOS_BORBOTONES.migracion_insert_clientes
+
+IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_sucursales') IS NOT NULL
+DROP PROCEDURE LOS_BORBOTONES.migracion_insert_sucursales
+
+IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_aerolineas') IS NOT NULL
+DROP PROCEDURE LOS_BORBOTONES.migracion_insert_aerolineas
+
+IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_ciudades') IS NOT NULL
+DROP PROCEDURE LOS_BORBOTONES.migracion_insert_ciudades
+
+IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_grupos_hotelarios') IS NOT NULL
+DROP PROCEDURE LOS_BORBOTONES.migracion_insert_grupos_hotelarios
+
+IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_tipos_habitacion') IS NOT NULL
+DROP PROCEDURE LOS_BORBOTONES.migracion_insert_tipos_habitacion
+
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'LOS_BORBOTONES')
   BEGIN
     EXEC ('CREATE SCHEMA LOS_BORBOTONES');
@@ -130,7 +148,7 @@ CREATE TABLE LOS_BORBOTONES.GRUPO_HOTELARIO (
 )
 
 CREATE TABLE LOS_BORBOTONES.HOTEL (
-		hotel_codigo nvarchar(255) NOT NULL,
+		hotel_codigo INT IDENTITY(1,1) NOT NULL,
 		hotel_calle nvarchar(50),
 		hotel_nro_calle decimal(18,0),
 		hotel_cantidad_estrellas decimal(18,0),
@@ -144,7 +162,7 @@ CREATE TABLE LOS_BORBOTONES.TIPO_HABITACION (
 
 CREATE TABLE LOS_BORBOTONES.HABITACION (
 		habitacion_numero decimal(18,0) NOT NULL,
-		habitacion_codigo_hotel nvarchar(255) NOT NULL,
+		habitacion_hotel_codigo INT NOT NULL,
 		habitacion_piso decimal(18,0),
 		habitacion_frente nvarchar(50),
 		habitacion_costo decimal(18,2),
@@ -178,7 +196,7 @@ CREATE TABLE LOS_BORBOTONES.ESTADIA (
 		estadia_codigo decimal(18,0) NOT NULL,
 		estadia_fecha_inicial datetime2(3),
 		estadia_cantidad_noches decimal(18,0),
-		estadia_hotel_codigo nvarchar(255),
+		estadia_hotel_codigo INT,
 		estadia_habitacion_numero decimal(18,0),
 		estadia_precio decimal(18,2),
 		estadia_factura_numero decimal(18,0),
@@ -199,7 +217,7 @@ ALTER TABLE LOS_BORBOTONES.BUTACA ADD CONSTRAINT PK_BUTACA_ID PRIMARY KEY (butac
 ALTER TABLE LOS_BORBOTONES.GRUPO_HOTELARIO ADD CONSTRAINT PK_GRUPO_HOTELARIO_CODIGO PRIMARY KEY (grupo_hotelario_codigo)
 ALTER TABLE LOS_BORBOTONES.HOTEL ADD CONSTRAINT PK_HOTEL_CODIGO PRIMARY KEY (hotel_codigo)
 ALTER TABLE LOS_BORBOTONES.TIPO_HABITACION ADD CONSTRAINT PK_TIPO_HABITACION_CODIGO PRIMARY KEY (tipo_habitacion_codigo)
-ALTER TABLE LOS_BORBOTONES.HABITACION ADD CONSTRAINT PK_HABITACION_NUMERO_CODIGO_HOTEL PRIMARY KEY (habitacion_numero, habitacion_codigo_hotel)
+ALTER TABLE LOS_BORBOTONES.HABITACION ADD CONSTRAINT PK_HABITACION_NUMERO_CODIGO_HOTEL PRIMARY KEY (habitacion_numero, habitacion_hotel_codigo)
 ALTER TABLE LOS_BORBOTONES.FACTURA ADD CONSTRAINT PK_FACTURA_NUMERO PRIMARY KEY (factura_numero)
 ALTER TABLE LOS_BORBOTONES.COMPRA_EMPRESA_TURISMO ADD CONSTRAINT PK_COMPRA_NUMERO PRIMARY KEY (compra_empr_numero)
 ALTER TABLE LOS_BORBOTONES.PASAJE ADD CONSTRAINT PK_PASAJE_CODIGO PRIMARY KEY (pasaje_codigo)
@@ -212,7 +230,7 @@ ALTER TABLE LOS_BORBOTONES.RUTA_AEREA ADD CONSTRAINT FK_RUTA_AEREA_CIUDAD_DESTIN
 ALTER TABLE LOS_BORBOTONES.BUTACA ADD CONSTRAINT FK_BUTACA_TIPO_BUTACA_CODIGO FOREIGN KEY (butaca_tipo_butaca_codigo) REFERENCES LOS_BORBOTONES.TIPO_BUTACA(tipo_butaca_codigo)
 ALTER TABLE LOS_BORBOTONES.BUTACA ADD CONSTRAINT FK_BUTACA_AVION_ID FOREIGN KEY (butaca_avion_id) REFERENCES LOS_BORBOTONES.AVION(avion_id)
 ALTER TABLE LOS_BORBOTONES.HOTEL ADD CONSTRAINT FK_HOTEL_GRUPO_HOTELARIO_CODIGO FOREIGN KEY (hotel_grupo_hotelario_codigo) REFERENCES LOS_BORBOTONES.GRUPO_HOTELARIO(grupo_hotelario_codigo)
-ALTER TABLE LOS_BORBOTONES.HABITACION ADD CONSTRAINT FK_HABITACION_CODIGO_HOTEL FOREIGN KEY (habitacion_codigo_hotel) REFERENCES LOS_BORBOTONES.HOTEL(hotel_codigo)
+ALTER TABLE LOS_BORBOTONES.HABITACION ADD CONSTRAINT FK_HABITACION_CODIGO_HOTEL FOREIGN KEY (habitacion_hotel_codigo) REFERENCES LOS_BORBOTONES.HOTEL(hotel_codigo)
 ALTER TABLE LOS_BORBOTONES.HABITACION ADD CONSTRAINT FK_HABITACION_TIPO_HABITACION_CODIGO FOREIGN KEY (habitacion_tipo_habitacion_codigo) REFERENCES LOS_BORBOTONES.TIPO_HABITACION(tipo_habitacion_codigo)
 ALTER TABLE LOS_BORBOTONES.FACTURA ADD CONSTRAINT FK_FACTURA_CLIENTE_ID FOREIGN KEY (factura_cliente_id) REFERENCES LOS_BORBOTONES.CLIENTE(cliente_id)
 ALTER TABLE LOS_BORBOTONES.FACTURA ADD CONSTRAINT FK_FACTURA_SUCURSAL_ID FOREIGN KEY (factura_sucursal_id) REFERENCES LOS_BORBOTONES.SUCURSAL(sucursal_id)
@@ -227,6 +245,8 @@ GO
 
 /* MIGRACION */
 
+------------------------------ CLIENTES ------------------------------ 
+
 CREATE PROC LOS_BORBOTONES.migracion_insert_clientes AS
 BEGIN
 	INSERT INTO LOS_BORBOTONES.CLIENTE(cliente_apellido, cliente_nombre, cliente_dni, cliente_fecha_nac, cliente_mail, cliente_telefono)
@@ -236,6 +256,8 @@ BEGIN
 		GROUP BY CLIENTE_DNI, CLIENTE_APELLIDO, CLIENTE_NOMBRE, CLIENTE_DNI, CLIENTE_FECHA_NAC, CLIENTE_MAIL, CLIENTE_TELEFONO
 END
 GO
+
+------------------------------ SUCURSALES ------------------------------ 
 
 CREATE PROC LOS_BORBOTONES.migracion_insert_sucursales AS
 BEGIN
@@ -248,6 +270,8 @@ BEGIN
 END
 GO
 
+------------------------------ AEROLINEAS ------------------------------ 
+
 CREATE PROC LOS_BORBOTONES.migracion_insert_aerolineas AS
 BEGIN
 	INSERT INTO LOS_BORBOTONES.AEROLINEA(aerolinea_razon_social)
@@ -259,6 +283,8 @@ BEGIN
 END
 GO
 
+------------------------------ CIUDADES ------------------------------ 
+
 CREATE PROC LOS_BORBOTONES.migracion_insert_ciudades AS
 BEGIN
 	INSERT INTO LOS_BORBOTONES.CIUDAD(ciudad_detalle)
@@ -269,6 +295,8 @@ BEGIN
 END
 GO
 
+------------------------------ GRUPOS HOTELARIOS ------------------------------ 
+
 CREATE PROC LOS_BORBOTONES.migracion_insert_grupos_hotelarios AS
 BEGIN
 	INSERT INTO LOS_BORBOTONES.GRUPO_HOTELARIO(grupo_hotelario_razon_social)
@@ -277,5 +305,33 @@ BEGIN
 		WHERE ESTADIA_CODIGO IS NOT NULL
 		GROUP BY EMPRESA_RAZON_SOCIAL
 		ORDER BY EMPRESA_RAZON_SOCIAL
+END
+GO
+
+------------------------------ HOTELES ------------------------------ 
+
+/*
+CREATE PROC LOS_BORBOTONES.migracion_insert_hoteles AS
+BEGIN
+	INSERT INTO LOS_BORBOTONES.HOTEL(hotel_calle, hotel_nro_calle, hotel_cantidad_estrellas, hotel_grupo_hotelario_codigo)
+		SELECT HOTEL_CALLE, HOTEL_NRO_CALLE, HOTEL_CANTIDAD_ESTRELLAS, grupo_hotelario_codigo
+		FROM gd_esquema.Maestra JOIN LOS_BORBOTONES.GRUPO_HOTELARIO ON EMPRESA_RAZON_SOCIAL = grupo_hotelario_razon_social
+		WHERE EMPRESA_RAZON_SOCIAL IS NOT NULL AND HOTEL_CALLE IS NOT NULL
+		GROUP BY HOTEL_CALLE, HOTEL_NRO_CALLE, HOTEL_CANTIDAD_ESTRELLAS, grupo_hotelario_codigo
+		ORDER BY grupo_hotelario_codigo, HOTEL_CALLE
+END
+GO
+*/
+
+------------------------------ TIPOS DE HABITACION ------------------------------ 
+
+CREATE PROC LOS_BORBOTONES.migracion_insert_tipos_habitacion AS
+BEGIN
+	INSERT INTO LOS_BORBOTONES.TIPO_HABITACION(tipo_habitacion_codigo, tipo_habitacion_detalle)
+		SELECT TIPO_HABITACION_CODIGO, TIPO_HABITACION_DESC
+		FROM gd_esquema.Maestra
+		WHERE TIPO_HABITACION_CODIGO IS NOT NULL
+		GROUP BY TIPO_HABITACION_CODIGO, TIPO_HABITACION_DESC
+		ORDER BY TIPO_HABITACION_CODIGO
 END
 GO
