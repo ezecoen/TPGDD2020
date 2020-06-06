@@ -91,12 +91,20 @@ IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_ciudades') IS NOT NULL
 DROP PROCEDURE LOS_BORBOTONES.migracion_insert_ciudades;
 GO
 
+IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_rutas_aereas') IS NOT NULL
+DROP PROCEDURE LOS_BORBOTONES.migracion_insert_rutas_aereas;
+GO
+
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_tipos_butaca') IS NOT NULL
 DROP PROCEDURE LOS_BORBOTONES.migracion_insert_tipos_butaca;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_grupos_hotelarios') IS NOT NULL
 DROP PROCEDURE LOS_BORBOTONES.migracion_insert_grupos_hotelarios;
+GO
+
+IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_hoteles') IS NOT NULL
+DROP PROCEDURE LOS_BORBOTONES.migracion_insert_hoteles;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_tipos_habitacion') IS NOT NULL
@@ -342,6 +350,21 @@ BEGIN
 END
 GO
 
+------------------------------ RUTAS AEREAS ------------------------------ 
+
+CREATE PROC LOS_BORBOTONES.migracion_insert_rutas_aereas AS
+BEGIN
+	INSERT INTO LOS_BORBOTONES.RUTA_AEREA(ruta_aerea_codigo, ruta_aerea_ciu_origen, ruta_aerea_ciu_destino)
+		SELECT RA.RUTA_AEREA_CODIGO, C1.ciudad_codigo, C2.ciudad_codigo
+		FROM GD1C2020.gd_esquema.Maestra RA 
+			INNER JOIN LOS_BORBOTONES.CIUDAD C1 ON RA.RUTA_AEREA_CIU_ORIG = C1.ciudad_detalle
+			INNER JOIN LOS_BORBOTONES.CIUDAD C2 ON RA.RUTA_AEREA_CIU_DEST = C2.ciudad_detalle
+		WHERE RUTA_AEREA_CODIGO IS NOT NULL
+		GROUP BY RA.RUTA_AEREA_CODIGO, C1.ciudad_codigo, C2.ciudad_codigo
+		ORDER BY RA.RUTA_AEREA_CODIGO
+END
+GO
+
 ------------------------------ TIPOS DE BUTACA ------------------------------
 
 CREATE PROC LOS_BORBOTONES.migracion_insert_tipos_butaca AS
@@ -404,6 +427,7 @@ EXEC LOS_BORBOTONES.migracion_insert_tipos_butaca;
 EXEC LOS_BORBOTONES.migracion_insert_grupos_hotelarios;
 EXEC LOS_BORBOTONES.migracion_insert_hoteles;
 EXEC LOS_BORBOTONES.migracion_insert_tipos_habitacion;
+-- Sin ejecturar -- EXEC LOS_BORBOTONES.migracion_insert_rutas_aereas;
 
 /*
 USE GD1C2020
