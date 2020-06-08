@@ -4,250 +4,249 @@ GO
 /* BORRO TABLAS SI EXISTEN */
 
 IF OBJECT_ID('LOS_BORBOTONES.CLIENTE') IS NOT NULL
-DROP TABLE LOS_BORBOTONES.CLIENTE;
+	DROP TABLE LOS_BORBOTONES.CLIENTE;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.SUCURSAL') IS NOT NULL
-DROP TABLE LOS_BORBOTONES.SUCURSAL;
+	DROP TABLE LOS_BORBOTONES.SUCURSAL;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.AEROLINEA') IS NOT NULL
-DROP TABLE LOS_BORBOTONES.AEROLINEA;
+	DROP TABLE LOS_BORBOTONES.AEROLINEA;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.VUELO') IS NOT NULL
-DROP TABLE LOS_BORBOTONES.VUELO;
+	DROP TABLE LOS_BORBOTONES.VUELO;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.RUTA_AEREA') IS NOT NULL
-DROP TABLE LOS_BORBOTONES.RUTA_AEREA;
+	DROP TABLE LOS_BORBOTONES.RUTA_AEREA;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.CIUDAD') IS NOT NULL
-DROP TABLE LOS_BORBOTONES.CIUDAD;
+	DROP TABLE LOS_BORBOTONES.CIUDAD;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.AVION') IS NOT NULL
-DROP TABLE LOS_BORBOTONES.AVION;
+	DROP TABLE LOS_BORBOTONES.AVION;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.BUTACA') IS NOT NULL
-DROP TABLE LOS_BORBOTONES.BUTACA;
+	DROP TABLE LOS_BORBOTONES.BUTACA;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.TIPO_BUTACA') IS NOT NULL
-DROP TABLE LOS_BORBOTONES.TIPO_BUTACA;
+	DROP TABLE LOS_BORBOTONES.TIPO_BUTACA;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.GRUPO_HOTELARIO') IS NOT NULL
-DROP TABLE LOS_BORBOTONES.GRUPO_HOTELARIO;
+	DROP TABLE LOS_BORBOTONES.GRUPO_HOTELARIO;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.HOTEL') IS NOT NULL
-DROP TABLE LOS_BORBOTONES.HOTEL;
+	DROP TABLE LOS_BORBOTONES.HOTEL;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.HABITACION') IS NOT NULL
-DROP TABLE LOS_BORBOTONES.HABITACION;
+	DROP TABLE LOS_BORBOTONES.HABITACION;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.TIPO_HABITACION') IS NOT NULL
-DROP TABLE LOS_BORBOTONES.TIPO_HABITACION;
+	DROP TABLE LOS_BORBOTONES.TIPO_HABITACION;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.PASAJE') IS NOT NULL
-DROP TABLE LOS_BORBOTONES.PASAJE;
+	DROP TABLE LOS_BORBOTONES.PASAJE;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.ESTADIA') IS NOT NULL
-DROP TABLE LOS_BORBOTONES.ESTADIA;
+	DROP TABLE LOS_BORBOTONES.ESTADIA;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.FACTURA') IS NOT NULL
-DROP TABLE LOS_BORBOTONES.FACTURA;
+	DROP TABLE LOS_BORBOTONES.FACTURA;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.COMPRA_EMPRESA_TURISMO') IS NOT NULL
-DROP TABLE LOS_BORBOTONES.COMPRA_EMPRESA_TURISMO;
+	DROP TABLE LOS_BORBOTONES.COMPRA_EMPRESA_TURISMO;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_clientes') IS NOT NULL
-DROP PROCEDURE LOS_BORBOTONES.migracion_insert_clientes;
+	DROP PROCEDURE LOS_BORBOTONES.migracion_insert_clientes;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_sucursales') IS NOT NULL
-DROP PROCEDURE LOS_BORBOTONES.migracion_insert_sucursales;
+	DROP PROCEDURE LOS_BORBOTONES.migracion_insert_sucursales;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_aerolineas') IS NOT NULL
-DROP PROCEDURE LOS_BORBOTONES.migracion_insert_aerolineas;
+	DROP PROCEDURE LOS_BORBOTONES.migracion_insert_aerolineas;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_aviones') IS NOT NULL
-DROP PROCEDURE LOS_BORBOTONES.migracion_insert_aviones;
+	DROP PROCEDURE LOS_BORBOTONES.migracion_insert_aviones;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_ciudades') IS NOT NULL
-DROP PROCEDURE LOS_BORBOTONES.migracion_insert_ciudades;
+	DROP PROCEDURE LOS_BORBOTONES.migracion_insert_ciudades;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_rutas_aereas') IS NOT NULL
-DROP PROCEDURE LOS_BORBOTONES.migracion_insert_rutas_aereas;
+	DROP PROCEDURE LOS_BORBOTONES.migracion_insert_rutas_aereas;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_tipos_butaca') IS NOT NULL
-DROP PROCEDURE LOS_BORBOTONES.migracion_insert_tipos_butaca;
+	DROP PROCEDURE LOS_BORBOTONES.migracion_insert_tipos_butaca;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_butacas') IS NOT NULL
-DROP PROCEDURE LOS_BORBOTONES.migracion_insert_butacas;
+	DROP PROCEDURE LOS_BORBOTONES.migracion_insert_butacas;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_grupos_hotelarios') IS NOT NULL
-DROP PROCEDURE LOS_BORBOTONES.migracion_insert_grupos_hotelarios;
+	DROP PROCEDURE LOS_BORBOTONES.migracion_insert_grupos_hotelarios;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_hoteles') IS NOT NULL
-DROP PROCEDURE LOS_BORBOTONES.migracion_insert_hoteles;
+	DROP PROCEDURE LOS_BORBOTONES.migracion_insert_hoteles;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_tipos_habitacion') IS NOT NULL
-DROP PROCEDURE LOS_BORBOTONES.migracion_insert_tipos_habitacion;
+	DROP PROCEDURE LOS_BORBOTONES.migracion_insert_tipos_habitacion;
 GO
 
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_habitaciones') IS NOT NULL
-DROP PROCEDURE LOS_BORBOTONES.migracion_insert_habitaciones;
+	DROP PROCEDURE LOS_BORBOTONES.migracion_insert_habitaciones;
 GO
 
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'LOS_BORBOTONES')
-  BEGIN
-    EXEC ('CREATE SCHEMA LOS_BORBOTONES');
-  END
+  	BEGIN
+    	EXEC ('CREATE SCHEMA LOS_BORBOTONES');
+  	END
 GO
 
 /* CREO TABLAS */
 
 CREATE TABLE LOS_BORBOTONES.CLIENTE (
-		cliente_id INT IDENTITY(1,1) NOT NULL,
-		cliente_apellido nvarchar(255),
-		cliente_nombre nvarchar(255),
-		cliente_dni decimal (18,0),
-		cliente_fecha_nac datetime2(3),
-		cliente_mail nvarchar(255),
-		cliente_telefono decimal(18,0)
+	cliente_id INT IDENTITY(1,1) NOT NULL,
+	cliente_apellido nvarchar(255),
+	cliente_nombre nvarchar(255),
+	cliente_dni decimal (18,0),
+	cliente_fecha_nac datetime2(3),
+	cliente_mail nvarchar(255),
+	cliente_telefono decimal(18,0)
 )
 
 CREATE TABLE LOS_BORBOTONES.SUCURSAL (
-
-		sucursal_id INT IDENTITY(2,1) NOT NULL,
-		sucursal_direccion nvarchar(255),
-		sucursal_mail nvarchar(255),
-		sucursal_telefono decimal(18,0)
+	sucursal_id INT IDENTITY(2,1) NOT NULL,
+	sucursal_direccion nvarchar(255),
+	sucursal_mail nvarchar(255),
+	sucursal_telefono decimal(18,0)
 )
 
 CREATE TABLE LOS_BORBOTONES.AEROLINEA (
-		aerolinea_codigo INT IDENTITY(1,1) NOT NULL,
-		aerolinea_razon_social nvarchar(255)
+	aerolinea_codigo INT IDENTITY(1,1) NOT NULL,
+	aerolinea_razon_social nvarchar(255)
 )
 
 CREATE TABLE LOS_BORBOTONES.AVION (
-		avion_id nvarchar(50) NOT NULL,
-		avion_modelo nvarchar(50)
+	avion_id nvarchar(50) NOT NULL,
+	avion_modelo nvarchar(50)
 )
 
 CREATE TABLE LOS_BORBOTONES.VUELO (
-		vuelo_codigo decimal(19,0) NOT NULL,
-		vuelo_fecha_salida datetime2(3),
-		vuelo_fecha_llegada datetime2(3),
-		vuelo_avion_id nvarchar(50),
-		vuelo_ruta_aerea_codigo decimal(18,0),
-		vuelo_ruta_aerea_ciu_origen nvarchar(255),
-		vuelo_ruta_aerea_ciu_destino nvarchar(255),
-		vuelo_aerolinea_codigo INT
+	vuelo_codigo decimal(19,0) NOT NULL,
+	vuelo_fecha_salida datetime2(3),
+	vuelo_fecha_llegada datetime2(3),
+	vuelo_avion_id nvarchar(50),
+	vuelo_ruta_aerea_codigo decimal(18,0),
+	vuelo_ruta_aerea_ciu_origen nvarchar(255),
+	vuelo_ruta_aerea_ciu_destino nvarchar(255),
+	vuelo_aerolinea_codigo INT
 )
 
 CREATE TABLE LOS_BORBOTONES.CIUDAD (
-		ciudad_codigo INT IDENTITY(1,1) NOT NULL,
-		ciudad_detalle nvarchar(255)
+	ciudad_codigo INT IDENTITY(1,1) NOT NULL,
+	ciudad_detalle nvarchar(255)
 )
 
 CREATE TABLE LOS_BORBOTONES.RUTA_AEREA (
-		ruta_aerea_codigo decimal(18,0) NOT NULL,
-		ruta_aerea_ciu_origen INT NOT NULL,
-		ruta_aerea_ciu_destino INT NOT NULL
+	ruta_aerea_codigo decimal(18,0) NOT NULL,
+	ruta_aerea_ciu_origen INT NOT NULL,
+	ruta_aerea_ciu_destino INT NOT NULL
 )
 
 CREATE TABLE LOS_BORBOTONES.TIPO_BUTACA (
-		tipo_butaca_codigo INT IDENTITY(1,1) NOT NULL,
-		tipo_butaca_detalle nvarchar(255)
+	tipo_butaca_codigo INT IDENTITY(1,1) NOT NULL,
+	tipo_butaca_detalle nvarchar(255)
 )
 
 CREATE TABLE LOS_BORBOTONES.BUTACA (
-		butaca_id INT IDENTITY(1,1) NOT NULL,
-		butaca_numero decimal(18,0),
-		butaca_tipo_butaca_codigo INT,
-		butaca_avion_id nvarchar(50)
+	butaca_id INT IDENTITY(1,1) NOT NULL,
+	butaca_numero decimal(18,0),
+	butaca_tipo_butaca_codigo INT,
+	butaca_avion_id nvarchar(50)
 )
 
 CREATE TABLE LOS_BORBOTONES.GRUPO_HOTELARIO (
-		grupo_hotelario_codigo INT IDENTITY(1,1) NOT NULL,
-		grupo_hotelario_razon_social nvarchar(255)
+	grupo_hotelario_codigo INT IDENTITY(1,1) NOT NULL,
+	grupo_hotelario_razon_social nvarchar(255)
 )
 
 CREATE TABLE LOS_BORBOTONES.HOTEL (
-		hotel_codigo INT IDENTITY(1,1) NOT NULL,
-		hotel_calle nvarchar(50),
-		hotel_nro_calle decimal(18,0),
-		hotel_cantidad_estrellas decimal(18,0),
-		hotel_grupo_hotelario_codigo INT
+	hotel_codigo INT IDENTITY(1,1) NOT NULL,
+	hotel_calle nvarchar(50),
+	hotel_nro_calle decimal(18,0),
+	hotel_cantidad_estrellas decimal(18,0),
+	hotel_grupo_hotelario_codigo INT
 )
 
 CREATE TABLE LOS_BORBOTONES.TIPO_HABITACION (
-		tipo_habitacion_codigo decimal(18,0) NOT NULL,
-		tipo_habitacion_detalle nvarchar(255)
+	tipo_habitacion_codigo decimal(18,0) NOT NULL,
+	tipo_habitacion_detalle nvarchar(255)
 )
 
 CREATE TABLE LOS_BORBOTONES.HABITACION (
-		habitacion_numero decimal(18,0) NOT NULL,
-		habitacion_hotel_codigo INT NOT NULL,
-		habitacion_piso decimal(18,0),
-		habitacion_frente nvarchar(50),
-		habitacion_costo decimal(18,2),
-		habitacion_precio decimal(18,2),
-		habitacion_tipo_habitacion_codigo decimal(18,0)
+	habitacion_numero decimal(18,0) NOT NULL,
+	habitacion_hotel_codigo INT NOT NULL,
+	habitacion_piso decimal(18,0),
+	habitacion_frente nvarchar(50),
+	habitacion_costo decimal(18,2),
+	habitacion_precio decimal(18,2),
+	habitacion_tipo_habitacion_codigo decimal(18,0)
 )
 
 CREATE TABLE LOS_BORBOTONES.FACTURA (
-		factura_fecha datetime2(3),
-		factura_numero decimal(18,0) NOT NULL,
-		factura_cliente_id INT,
-		factura_sucursal_id INT
+	factura_fecha datetime2(3),
+	factura_numero decimal(18,0) NOT NULL,
+	factura_cliente_id INT,
+	factura_sucursal_id INT
 )
 
 CREATE TABLE LOS_BORBOTONES.COMPRA_EMPRESA_TURISMO (
-		compra_empr_numero decimal(18,0) NOT NULL,
-		compra_empr_fecha datetime2(3)
+	compra_empr_numero decimal(18,0) NOT NULL,
+	compra_empr_fecha datetime2(3)
 )
 
 CREATE TABLE LOS_BORBOTONES.PASAJE (
-		pasaje_codigo decimal(18,0) NOT NULL,
-		pasaje_costo decimal(18,2),
-		pasaje_precio decimal(18,2),
-		pasaje_vuelo_codigo decimal(19,0),
-		pasaje_butaca_id INT,
-		pasaje_factura_numero decimal(18,0),
-		pasaje_compra_numero decimal(18,0)
+	pasaje_codigo decimal(18,0) NOT NULL,
+	pasaje_costo decimal(18,2),
+	pasaje_precio decimal(18,2),
+	pasaje_vuelo_codigo decimal(19,0),
+	pasaje_butaca_id INT,
+	pasaje_factura_numero decimal(18,0),
+	pasaje_compra_numero decimal(18,0)
 )
 
 CREATE TABLE LOS_BORBOTONES.ESTADIA (
-		estadia_codigo decimal(18,0) NOT NULL,
-		estadia_fecha_inicial datetime2(3),
-		estadia_cantidad_noches decimal(18,0),
-		estadia_hotel_codigo INT,
-		estadia_habitacion_numero decimal(18,0),
-		estadia_precio decimal(18,2),
-		estadia_factura_numero decimal(18,0),
-		estadia_compra_numero decimal(18,0)
+	estadia_codigo decimal(18,0) NOT NULL,
+	estadia_fecha_inicial datetime2(3),
+	estadia_cantidad_noches decimal(18,0),
+	estadia_hotel_codigo INT,
+	estadia_habitacion_numero decimal(18,0),
+	estadia_precio decimal(18,2),
+	estadia_factura_numero decimal(18,0),
+	estadia_compra_numero decimal(18,0)
 )
 
 ------------------------------ CREANDO PRIMARY KEY ------------------------------
@@ -453,6 +452,26 @@ BEGIN
 		ORDER BY H.hotel_codigo, M.HABITACION_NUMERO
 END
 GO
+
+------------------------------ VUELO ------------------------------ 
+
+------------------------------ FACTURA ------------------------------ 
+
+------------------------------ COMPRA EMPRESA TURISMO ------------------------------ 
+
+------------------------------ PASAJE ------------------------------ 
+
+------------------------------ ESTADIA ------------------------------
+
+--CREATE PROC LOS_BORBOTONES.migracion_insert_estadia AS
+--BEGIN
+	--INSERT INTO LOS_BORBOTONES.ESTADIA(estadia_codigo, estadia_fecha_inicial, estadia_cantidad_noches, estadia_hotel_codigo, estadia_habitacion_numero, estadia_precio, estadia_factura_numero, estadia_compra_numero)
+		--SELECT M.ESTADIA_CODIGO, M.ESTADIA_FECHA_INI, M.ESTADIA_CANTIDAD_NOCHES, HO.hotel_codigo, HA.habitacion_numero
+		--FROM GD1C2020.gd_esquema.Maestra M
+		--INNER JOIN GD1C2020.LOS_BORBOTONES.HABITACION HA ON ...
+		--INNER JOIN GD1C2020.LOS_BORBOTONES.HOTEL HO ON ...
+--END
+--GO
 
 ------------------------------ EJECUTO LOS PROCEDURES ------------------------------
 
