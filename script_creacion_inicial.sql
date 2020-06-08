@@ -487,6 +487,7 @@ EXEC LOS_BORBOTONES.migracion_insert_grupos_hotelarios;
 EXEC LOS_BORBOTONES.migracion_insert_hoteles;
 EXEC LOS_BORBOTONES.migracion_insert_tipos_habitacion;
 EXEC LOS_BORBOTONES.migracion_insert_habitaciones;
+--EXEC LOS_BORBOTONES.migracion_insert_estadia;
 
 
 ------------------------------ DROP DE PK Y FK EN CASO DE SER NECESARIO ------------------------------
