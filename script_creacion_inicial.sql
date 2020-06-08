@@ -119,6 +119,10 @@ IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_habitaciones') IS NOT NULL
 	DROP PROCEDURE LOS_BORBOTONES.migracion_insert_habitaciones;
 GO
 
+IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_compras') IS NOT NULL
+	DROP PROCEDURE LOS_BORBOTONES.migracion_insert_compras;
+GO
+
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'LOS_BORBOTONES')
   	BEGIN
     	EXEC ('CREATE SCHEMA LOS_BORBOTONES');
@@ -457,7 +461,17 @@ GO
 
 ------------------------------ FACTURA ------------------------------ 
 
------------------------------- COMPRA EMPRESA TURISMO ------------------------------ 
+------------------------------ COMPRAS EMPRESA TURISMO ------------------------------ 
+
+CREATE PROC LOS_BORBOTONES.migracion_insert_compras AS
+BEGIN
+	INSERT INTO LOS_BORBOTONES.COMPRA_EMPRESA_TURISMO(compra_empr_numero, compra_empr_fecha)
+		SELECT COMPRA_NUMERO, COMPRA_FECHA
+		FROM GD1C2020.gd_esquema.Maestra
+		GROUP BY COMPRA_NUMERO, COMPRA_FECHA
+		ORDER BY COMPRA_FECHA, COMPRA_NUMERO
+END
+GO
 
 ------------------------------ PASAJE ------------------------------ 
 
@@ -487,6 +501,7 @@ EXEC LOS_BORBOTONES.migracion_insert_grupos_hotelarios;
 EXEC LOS_BORBOTONES.migracion_insert_hoteles;
 EXEC LOS_BORBOTONES.migracion_insert_tipos_habitacion;
 EXEC LOS_BORBOTONES.migracion_insert_habitaciones;
+EXEC LOS_BORBOTONES.migracion_insert_compras;
 --EXEC LOS_BORBOTONES.migracion_insert_estadia;
 
 
