@@ -127,7 +127,7 @@ ORDER BY VUELO_CODIGO
 SELECT M.VUELO_CODIGO, M.VUELO_FECHA_SALUDA, M.VUELO_FECHA_LLEGADA, A.avion_id, RA.ruta_aerea_codigo, RA.ruta_aerea_ciu_origen, RA.ruta_aerea_ciu_destino, AE.aerolinea_codigo
 FROM GD1C2020.gd_esquema.Maestra M
 	INNER JOIN GD1C2020.LOS_BORBOTONES.AVION A ON M.AVION_IDENTIFICADOR = A.avion_id
-	INNER JOIN GD1C2020.LOS_BORBOTONES.RUTA_AEREA RA ON M.RUTA_AEREA_CODIGO = RA.ruta_aerea_codigo AND M.RUTA_AEREA_CIU_ORIG = RA.ruta_aerea_ciu_origen AND M.RUTA_AEREA_CIU_DEST = RA.ruta_aerea_ciu_destino
+	INNER JOIN GD1C2020.LOS_BORBOTONES.RUTA_AEREA RA ON M.RUTA_AEREA_CODIGO = RA.ruta_aerea_codigo -- AND M.RUTA_AEREA_CIU_ORIG = RA.ruta_aerea_ciu_origen AND M.RUTA_AEREA_CIU_DEST = RA.ruta_aerea_ciu_destino
 	INNER JOIN GD1C2020.LOS_BORBOTONES.AEROLINEA AE ON M.EMPRESA_RAZON_SOCIAL = AE.aerolinea_razon_social
 WHERE M.VUELO_CODIGO IS NOT NULL
 GROUP BY M.VUELO_CODIGO, M.VUELO_FECHA_SALUDA, M.VUELO_FECHA_LLEGADA, A.avion_id, RA.ruta_aerea_codigo, RA.ruta_aerea_ciu_origen, RA.ruta_aerea_ciu_destino, AE.aerolinea_codigo
