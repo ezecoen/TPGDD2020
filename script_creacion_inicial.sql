@@ -99,9 +99,15 @@ IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_grupos_hotelarios') IS NOT NULL
 DROP PROCEDURE LOS_BORBOTONES.migracion_insert_grupos_hotelarios;
 GO
 
+IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_hoteles') IS NOT NULL
+DROP PROCEDURE LOS_BORBOTONES.migracion_insert_aviones;
+GO
+
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_tipos_habitacion') IS NOT NULL
 DROP PROCEDURE LOS_BORBOTONES.migracion_insert_tipos_habitacion;
 GO
+
+
 
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'LOS_BORBOTONES')
   BEGIN
@@ -368,15 +374,18 @@ END
 GO
 
 ------------------------------ HOTELES ------------------------------ 
+--nota: agregar en el doc de decisiones del tp que en cada consulta usamos un campo de la tabla (chequeamos si ese campo no es NULL) para asegurarnos
+--que solo vamos a recibir las filas que nos interesan. estaria bueno poner esto en el doc y decir que campo elegimos para cada consulta
 
 CREATE PROC LOS_BORBOTONES.migracion_insert_hoteles AS
 BEGIN
 	INSERT INTO LOS_BORBOTONES.HOTEL(hotel_calle, hotel_nro_calle, hotel_cantidad_estrellas, hotel_grupo_hotelario_codigo)
-		SELECT HOTEL_CALLE, HOTEL_NRO_CALLE, HOTEL_CANTIDAD_ESTRELLAS, grupo_hotelario_codigo
-		FROM gd_esquema.Maestra JOIN LOS_BORBOTONES.GRUPO_HOTELARIO ON EMPRESA_RAZON_SOCIAL = grupo_hotelario_razon_social
-		WHERE EMPRESA_RAZON_SOCIAL IS NOT NULL AND HOTEL_CALLE IS NOT NULL
-		GROUP BY HOTEL_CALLE, HOTEL_NRO_CALLE, HOTEL_CANTIDAD_ESTRELLAS, grupo_hotelario_codigo
-		ORDER BY grupo_hotelario_codigo, HOTEL_CALLE
+		SELECT HOTEL_CALLE, HOTEL_NRO_CALLE, HOTEL_CANTIDAD_ESTRELLAS, (select grupo_hotelario_codigo from GRUPO_HOTELARIO 
+																		where grupo_hotelario_razon_social = EMPRESA_RAZON_SOCIAL)
+		FROM gd_esquema.Maestra
+		WHERE EMPRESA_RAZON_SOCIAL IS NOT NULL AND ESTADIA_CODIGO IS NOT NULL
+		GROUP BY HOTEL_CALLE, HOTEL_NRO_CALLE, HOTEL_CANTIDAD_ESTRELLAS
+		ORDER BY 4
 END
 GO
 
@@ -392,6 +401,26 @@ BEGIN
 		ORDER BY TIPO_HABITACION_CODIGO
 END
 GO
+
+---------------------------------- HABITACION ---------------------------------- 
+
+CREATE PROC LOS_BORBOTONES.migracion_insert_habitaciones AS
+BEGIN
+	INSERT INTO LOS_BORBOTONES.HABITACION(habitacion_numero, habitacion_hotel_codigo, habitacion_piso, habitacion_frente, habitacion_costo, habitacion_precio, habitacion_tipo_habitacion_codigo)
+		SELECT HABITACION_NUMERO, (select hotel_codigo from HOTEL
+									where hotel_calle = HOTEL_CALLE and hotel_nro_calle = HOTEL_NRO_CALLE),
+									HABITACION_PISO,
+									HABITACION_FRENTE,
+									HABITACION_COSTO,
+									HABITACION_PRECIO,
+									(select tipo_habitacion_codigo from TIPO_HABITACION where tipo_habitacion_detalle = TIPO_HABITACION_DESC)
+		FROM gd_esquema.Maestra
+		WHERE TIPO_HABITACION_CODIGO IS NOT NULL
+		GROUP BY TIPO_HABITACION_CODIGO, TIPO_HABITACION_DESC
+		ORDER BY TIPO_HABITACION_CODIGO
+END
+GO
+
 
 ------------------------------ EJECUTO LOS PROCEDURES ------------------------------
 
