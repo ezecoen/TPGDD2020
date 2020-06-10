@@ -303,6 +303,18 @@ ALTER TABLE LOS_BORBOTONES.ESTADIA ADD CONSTRAINT FK_ESTADIA_FACTURA_NUMERO FORE
 ALTER TABLE LOS_BORBOTONES.ESTADIA ADD CONSTRAINT FK_ESTADIA_COMPRA_NUMERO FOREIGN KEY (estadia_compra_numero) REFERENCES LOS_BORBOTONES.COMPRA_EMPRESA_TURISMO(compra_empr_numero);
 GO
 
+--------------- FUNCIONES UTILES PARA OBTENER PKs DE LAS TABLAS YA MIGRADAS -------------------------
+
+CREATE FUNCTION LOS_BORBOTONES.get_hotel_codigo_by_calle_y_nro_calle (@calle nvarchar(50), @nro_calle decimal(18,0))
+RETURNS INT
+AS
+BEGIN
+	RETURN (select hotel_codigo 
+	from LOS_BORBOTONES.HOTEL 
+	where hotel_calle = @calle and hotel_nro_calle = @nro_calle)
+END
+GO
+
 /* MIGRACION */
 
 ------------------------------ CLIENTES ------------------------------ 
@@ -458,17 +470,23 @@ GO
 CREATE PROC LOS_BORBOTONES.migracion_insert_habitaciones AS
 BEGIN
 	INSERT INTO LOS_BORBOTONES.HABITACION(habitacion_numero, habitacion_hotel_codigo, habitacion_piso, habitacion_frente, habitacion_costo, habitacion_precio, habitacion_tipo_habitacion_codigo)
-		SELECT HABITACION_NUMERO, (select hotel_codigo from HOTEL
-									where hotel_calle = HOTEL_CALLE and hotel_nro_calle = HOTEL_NRO_CALLE),
-									HABITACION_PISO,
-									HABITACION_FRENTE,
-									HABITACION_COSTO,
-									HABITACION_PRECIO,
-									(select tipo_habitacion_codigo from TIPO_HABITACION where tipo_habitacion_detalle = TIPO_HABITACION_DESC)
+		SELECT HABITACION_NUMERO,
+				LOS_BORBOTONES.get_hotel_codigo_by_calle_y_nro_calle(HOTEL_CALLE, HOTEL_NRO_CALLE),
+				HABITACION_PISO,
+				HABITACION_FRENTE,
+				HABITACION_COSTO,
+				HABITACION_PRECIO,
+				TIPO_HABITACION_CODIGO
 		FROM gd_esquema.Maestra
-		WHERE TIPO_HABITACION_CODIGO IS NOT NULL
-		GROUP BY TIPO_HABITACION_CODIGO, TIPO_HABITACION_DESC
-		ORDER BY TIPO_HABITACION_CODIGO
+		WHERE ESTADIA_CODIGO IS NOT NULL
+		GROUP BY HABITACION_NUMERO,
+				LOS_BORBOTONES.get_hotel_codigo_by_calle_y_nro_calle(HOTEL_CALLE, HOTEL_NRO_CALLE),
+				HABITACION_PISO,
+				HABITACION_FRENTE,
+				HABITACION_COSTO,
+				HABITACION_PRECIO,
+				TIPO_HABITACION_CODIGO
+		ORDER BY LOS_BORBOTONES.get_hotel_codigo_by_calle_y_nro_calle(HOTEL_CALLE, HOTEL_NRO_CALLE), HABITACION_NUMERO
 END
 GO
 
@@ -518,7 +536,7 @@ EXEC LOS_BORBOTONES.migracion_insert_tipos_habitacion;
 EXEC LOS_BORBOTONES.migracion_insert_habitaciones;
 EXEC LOS_BORBOTONES.migracion_insert_compras;
 --EXEC LOS_BORBOTONES.migracion_insert_estadia;
-
+GO
 
 ------------------------------ DROP DE PK Y FK EN CASO DE SER NECESARIO ------------------------------
 
