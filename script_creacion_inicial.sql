@@ -156,6 +156,15 @@ IF OBJECT_ID('LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad') IS NOT NULL
 	DROP FUNCTION LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad;
 GO
 
+IF OBJECT_ID('LOS_BORBOTONES.get_hotel_codigo_by_calle_y_nro_calle') IS NOT NULL
+	DROP FUNCTION LOS_BORBOTONES.get_hotel_codigo_by_calle_y_nro_calle;
+GO
+
+IF OBJECT_ID('LOS_BORBOTONES.get_grupo_hotelario_codigo_by_empresa_razon_social') IS NOT NULL
+	DROP FUNCTION LOS_BORBOTONES.get_grupo_hotelario_codigo_by_empresa_razon_social;
+GO
+
+
 ------------------------------ DROP DE LOS PROCEDURE ------------------------------
 
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_clientes') IS NOT NULL
@@ -411,6 +420,17 @@ BEGIN
 END
 GO
 
+
+CREATE FUNCTION LOS_BORBOTONES.get_grupo_hotelario_codigo_by_empresa_razon_social(@empresa_razon_social nvarchar(255))
+RETURNS INT
+AS
+BEGIN
+	RETURN (select grupo_hotelario_codigo
+	from GRUPO_HOTELARIO 
+	where grupo_hotelario_razon_social = @empresa_razon_social)
+END
+GO
+
 ------------------------------ CLIENTES ------------------------------ 
 
 CREATE PROC LOS_BORBOTONES.migracion_insert_clientes AS
@@ -535,11 +555,13 @@ GO
 CREATE PROC LOS_BORBOTONES.migracion_insert_hoteles AS
 BEGIN
 	INSERT INTO LOS_BORBOTONES.HOTEL(hotel_calle, hotel_nro_calle, hotel_cantidad_estrellas, hotel_grupo_hotelario_codigo)
-		SELECT HOTEL_CALLE, HOTEL_NRO_CALLE, HOTEL_CANTIDAD_ESTRELLAS, (select grupo_hotelario_codigo from GRUPO_HOTELARIO 
-																		where grupo_hotelario_razon_social = EMPRESA_RAZON_SOCIAL)
+		SELECT HOTEL_CALLE,
+				HOTEL_NRO_CALLE,
+				HOTEL_CANTIDAD_ESTRELLAS,
+				LOS_BORBOTONES.get_grupo_hotelario_codigo_by_empresa_razon_social(EMPRESA_RAZON_SOCIAL)
 		FROM gd_esquema.Maestra
 		WHERE EMPRESA_RAZON_SOCIAL IS NOT NULL AND ESTADIA_CODIGO IS NOT NULL
-		GROUP BY HOTEL_CALLE, HOTEL_NRO_CALLE, HOTEL_CANTIDAD_ESTRELLAS
+		GROUP BY HOTEL_CALLE, HOTEL_NRO_CALLE, HOTEL_CANTIDAD_ESTRELLAS,LOS_BORBOTONES.get_grupo_hotelario_codigo_by_empresa_razon_social(EMPRESA_RAZON_SOCIAL)
 		ORDER BY 4
 END
 GO
@@ -578,7 +600,7 @@ BEGIN
 				HABITACION_COSTO,
 				HABITACION_PRECIO,
 				TIPO_HABITACION_CODIGO
-		ORDER BY LOS_BORBOTONES.get_hotel_codigo_by_calle_y_nro_calle(HOTEL_CALLE, HOTEL_NRO_CALLE), HABITACION_NUMERO
+		ORDER BY 2,1
 END
 GO
 
