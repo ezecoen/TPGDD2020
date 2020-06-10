@@ -97,7 +97,7 @@ ORDER BY grupo_hotelario_codigo, HOTEL_CALLE
 SELECT DISTINCT HOTEL_CALLE, HOTEL_NRO_CALLE, EMPRESA_RAZON_SOCIAL FROM GD1C2020.gd_esquema.Maestra
 WHERE HOTEL_CALLE IS NOT NULL
 ORDER BY 3
-
+go
 
 ------------------------------ RUTAS AEREAS ------------------------------ 
 

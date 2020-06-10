@@ -164,6 +164,13 @@ IF OBJECT_ID('LOS_BORBOTONES.get_grupo_hotelario_codigo_by_empresa_razon_social'
 	DROP FUNCTION LOS_BORBOTONES.get_grupo_hotelario_codigo_by_empresa_razon_social;
 GO
 
+IF OBJECT_ID('LOS_BORBOTONES.get_aerolinea_codigo_by_empresa_razon_social') IS NOT NULL
+	DROP FUNCTION LOS_BORBOTONES.get_aerolinea_codigo_by_empresa_razon_social;
+GO
+
+IF OBJECT_ID('LOS_BORBOTONES.get_tipo_butaca_codigo_by_tipo_butaca_detalle') IS NOT NULL
+	DROP FUNCTION LOS_BORBOTONES.get_tipo_butaca_codigo_by_tipo_butaca_detalle;
+GO
 
 ------------------------------ DROP DE LOS PROCEDURE ------------------------------
 
@@ -431,6 +438,26 @@ BEGIN
 END
 GO
 
+CREATE FUNCTION LOS_BORBOTONES.get_aerolinea_codigo_by_empresa_razon_social(@empresa_razon_social nvarchar(255))
+RETURNS INT
+AS
+BEGIN
+	RETURN (select aerolinea_codigo
+	from AEROLINEA 
+	where aerolinea_razon_social = @empresa_razon_social)
+END
+GO
+
+CREATE FUNCTION LOS_BORBOTONES.get_tipo_butaca_codigo_by_tipo_butaca_detalle(@tipo_butaca_detalle nvarchar(255))
+RETURNS INT
+AS
+BEGIN
+	RETURN (select tipo_butaca_codigo
+	from TIPO_BUTACA
+	where tipo_butaca_detalle = @tipo_butaca_detalle)
+END
+GO
+
 ------------------------------ CLIENTES ------------------------------ 
 
 CREATE PROC LOS_BORBOTONES.migracion_insert_clientes AS
@@ -525,13 +552,11 @@ GO
 CREATE PROC LOS_BORBOTONES.migracion_insert_butacas AS
 BEGIN
 	INSERT INTO LOS_BORBOTONES.BUTACA(butaca_numero, butaca_tipo_butaca_codigo, butaca_avion_id)
-		SELECT M.BUTACA_NUMERO, TB.tipo_butaca_codigo, A.avion_id
-		FROM GD1C2020.gd_esquema.Maestra M
-			INNER JOIN GD1C2020.LOS_BORBOTONES.AVION A ON M.AVION_IDENTIFICADOR = A.avion_id
-			INNER JOIN GD1C2020.LOS_BORBOTONES.TIPO_BUTACA TB ON M.BUTACA_TIPO = TB.tipo_butaca_detalle
-		WHERE M.BUTACA_NUMERO IS NOT NULL
-		GROUP BY M.BUTACA_NUMERO, TB.tipo_butaca_codigo, A.avion_id
-		ORDER BY A.avion_id, M.BUTACA_NUMERO, TB.tipo_butaca_codigo
+		SELECT BUTACA_NUMERO, LOS_BORBOTONES.get_tipo_butaca_codigo_by_tipo_butaca_detalle(BUTACA_TIPO), AVION_IDENTIFICADOR
+		FROM GD1C2020.gd_esquema.Maestra 
+		WHERE BUTACA_NUMERO IS NOT NULL
+		GROUP BY BUTACA_NUMERO, LOS_BORBOTONES.get_tipo_butaca_codigo_by_tipo_butaca_detalle(BUTACA_TIPO), AVION_IDENTIFICADOR
+		ORDER BY AVION_IDENTIFICADOR, BUTACA_NUMERO, LOS_BORBOTONES.get_tipo_butaca_codigo_by_tipo_butaca_detalle(BUTACA_TIPO)
 END
 GO
 
@@ -605,6 +630,18 @@ END
 GO
 
 ------------------------------ VUELO ------------------------------ 
+CREATE PROC LOS_BORBOTONES.migracion_insert_vuelos AS
+BEGIN
+	INSERT INTO LOS_BORBOTONES.VUELO(vuelo_codigo, vuelo_fecha_salida, vuelo_fecha_llegada, vuelo_avion_id, vuelo_ruta_aerea_codigo, vuelo_ruta_aerea_ciu_origen, vuelo_ruta_aerea_ciu_destino, vuelo_aerolinea_codigo)
+		SELECT VUELO_CODIGO, VUELO_FECHA_SALUDA, VUELO_FECHA_LLEGADA, AVION_IDENTIFICADOR, RUTA_AEREA_CODIGO, LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_ORIG), LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_DEST), AE.aerolinea_codigo
+		FROM GD1C2020.gd_esquema.Maestra
+		INNER JOIN GD1C2020.LOS_BORBOTONES.AEROLINEA AE ON M.EMPRESA_RAZON_SOCIAL = AE.aerolinea_razon_social
+		WHERE M.VUELO_CODIGO IS NOT NULL
+		GROUP BY M.VUELO_CODIGO, M.VUELO_FECHA_SALUDA, M.VUELO_FECHA_LLEGADA, M.AVION_IDENTIFICADOR, M.RUTA_AEREA_CODIGO, M.RUTA_AEREA_CIU_ORIG, M.RUTA_AEREA_CIU_DEST, AE.aerolinea_codigo
+		ORDER BY M.VUELO_CODIGO, M.VUELO_FECHA_SALUDA
+END
+GO
+
 
 ------------------------------ FACTURA ------------------------------ 
 
