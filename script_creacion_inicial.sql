@@ -230,6 +230,10 @@ IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_compras') IS NOT NULL
 	DROP PROCEDURE LOS_BORBOTONES.migracion_insert_compras;
 GO
 
+IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_vuelos') IS NOT NULL
+	DROP PROCEDURE LOS_BORBOTONES.migracion_insert_vuelos;
+GO
+
 ------------------------------ DROP DEL SCHEMA ------------------------------
 
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'LOS_BORBOTONES')
@@ -629,21 +633,34 @@ BEGIN
 END
 GO
 
------------------------------- VUELO ------------------------------ 
+------------------------------ VUELO ------------------------------
+
 CREATE PROC LOS_BORBOTONES.migracion_insert_vuelos AS
 BEGIN
 	INSERT INTO LOS_BORBOTONES.VUELO(vuelo_codigo, vuelo_fecha_salida, vuelo_fecha_llegada, vuelo_avion_id, vuelo_ruta_aerea_codigo, vuelo_ruta_aerea_ciu_origen, vuelo_ruta_aerea_ciu_destino, vuelo_aerolinea_codigo)
-		SELECT VUELO_CODIGO, VUELO_FECHA_SALUDA, VUELO_FECHA_LLEGADA, AVION_IDENTIFICADOR, RUTA_AEREA_CODIGO, LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_ORIG), LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_DEST), AE.aerolinea_codigo
+		SELECT VUELO_CODIGO,
+				VUELO_FECHA_SALUDA,
+				VUELO_FECHA_LLEGADA,
+				AVION_IDENTIFICADOR,
+				RUTA_AEREA_CODIGO,
+				LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_ORIG),
+				LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_DEST),
+				LOS_BORBOTONES.get_aerolinea_codigo_by_empresa_razon_social(EMPRESA_RAZON_SOCIAL)
 		FROM GD1C2020.gd_esquema.Maestra
-		INNER JOIN GD1C2020.LOS_BORBOTONES.AEROLINEA AE ON M.EMPRESA_RAZON_SOCIAL = AE.aerolinea_razon_social
-		WHERE M.VUELO_CODIGO IS NOT NULL
-		GROUP BY M.VUELO_CODIGO, M.VUELO_FECHA_SALUDA, M.VUELO_FECHA_LLEGADA, M.AVION_IDENTIFICADOR, M.RUTA_AEREA_CODIGO, M.RUTA_AEREA_CIU_ORIG, M.RUTA_AEREA_CIU_DEST, AE.aerolinea_codigo
-		ORDER BY M.VUELO_CODIGO, M.VUELO_FECHA_SALUDA
+		WHERE VUELO_CODIGO IS NOT NULL
+		GROUP BY VUELO_CODIGO, VUELO_FECHA_SALUDA,
+			VUELO_FECHA_LLEGADA,
+			AVION_IDENTIFICADOR,
+			RUTA_AEREA_CODIGO,
+			RUTA_AEREA_CIU_ORIG,
+			RUTA_AEREA_CIU_DEST,
+			LOS_BORBOTONES.get_aerolinea_codigo_by_empresa_razon_social(EMPRESA_RAZON_SOCIAL)
+		ORDER BY VUELO_CODIGO, VUELO_FECHA_SALUDA
 END
 GO
 
+------------------------------ FACTURA ------------------------------------------
 
------------------------------- FACTURA ------------------------------ 
 
 ------------------------------ COMPRAS EMPRESA TURISMO ------------------------------ 
 
@@ -686,4 +703,5 @@ EXEC LOS_BORBOTONES.migracion_insert_hoteles;
 EXEC LOS_BORBOTONES.migracion_insert_tipos_habitacion;
 EXEC LOS_BORBOTONES.migracion_insert_habitaciones;
 EXEC LOS_BORBOTONES.migracion_insert_compras;
+EXEC LOS_BORBOTONES.migracion_insert_vuelos;
 --EXEC LOS_BORBOTONES.migracion_insert_estadia;
