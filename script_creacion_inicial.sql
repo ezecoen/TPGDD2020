@@ -172,6 +172,13 @@ IF OBJECT_ID('LOS_BORBOTONES.get_tipo_butaca_codigo_by_tipo_butaca_detalle') IS 
 	DROP FUNCTION LOS_BORBOTONES.get_tipo_butaca_codigo_by_tipo_butaca_detalle;
 GO
 
+IF OBJECT_ID('LOS_BORBOTONES.get_cliente_id_by_nombre_apellido_dni') IS NOT NULL
+	DROP FUNCTION LOS_BORBOTONES.get_cliente_id_by_nombre_apellido_dni;
+GO
+
+IF OBJECT_ID('LOS_BORBOTONES.get_sucursal_id_by_direccion') IS NOT NULL
+	DROP FUNCTION LOS_BORBOTONES.get_sucursal_id_by_direccion;
+GO
 ------------------------------ DROP DE LOS PROCEDURE ------------------------------
 
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_clientes') IS NOT NULL
@@ -233,6 +240,11 @@ GO
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_vuelos') IS NOT NULL
 	DROP PROCEDURE LOS_BORBOTONES.migracion_insert_vuelos;
 GO
+
+IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_facturas') IS NOT NULL
+	DROP PROCEDURE LOS_BORBOTONES.migracion_insert_facturas;
+GO
+
 
 ------------------------------ DROP DEL SCHEMA ------------------------------
 
@@ -334,8 +346,8 @@ CREATE TABLE LOS_BORBOTONES.HABITACION (
 )
 
 CREATE TABLE LOS_BORBOTONES.FACTURA (
-	factura_fecha datetime2(3),
 	factura_numero decimal(18,0) NOT NULL,
+	factura_fecha datetime2(3),
 	factura_cliente_id INT,
 	factura_sucursal_id INT
 )
@@ -352,7 +364,8 @@ CREATE TABLE LOS_BORBOTONES.PASAJE (
 	pasaje_vuelo_codigo decimal(19,0),
 	pasaje_butaca_id INT,
 	pasaje_factura_numero decimal(18,0),
-	pasaje_compra_numero decimal(18,0)
+	pasaje_compra_numero decimal(18,0),
+	pasaje_valido bit
 )
 
 CREATE TABLE LOS_BORBOTONES.ESTADIA (
@@ -363,7 +376,8 @@ CREATE TABLE LOS_BORBOTONES.ESTADIA (
 	estadia_habitacion_numero decimal(18,0),
 	estadia_precio decimal(18,2),
 	estadia_factura_numero decimal(18,0),
-	estadia_compra_numero decimal(18,0)
+	estadia_compra_numero decimal(18,0),
+	pasaje_valido bit
 )
 
 ------------------------------ CREANDO PRIMARY KEY ------------------------------
@@ -437,7 +451,7 @@ RETURNS INT
 AS
 BEGIN
 	RETURN (select grupo_hotelario_codigo
-	from GRUPO_HOTELARIO 
+	from LOS_BORBOTONES.GRUPO_HOTELARIO 
 	where grupo_hotelario_razon_social = @empresa_razon_social)
 END
 GO
@@ -447,7 +461,7 @@ RETURNS INT
 AS
 BEGIN
 	RETURN (select aerolinea_codigo
-	from AEROLINEA 
+	from LOS_BORBOTONES.AEROLINEA 
 	where aerolinea_razon_social = @empresa_razon_social)
 END
 GO
@@ -457,12 +471,35 @@ RETURNS INT
 AS
 BEGIN
 	RETURN (select tipo_butaca_codigo
-	from TIPO_BUTACA
+	from LOS_BORBOTONES.TIPO_BUTACA
 	where tipo_butaca_detalle = @tipo_butaca_detalle)
 END
 GO
 
------------------------------- CLIENTES ------------------------------ 
+/*
+CREATE FUNCTION LOS_BORBOTONES.get_cliente_id_by_nombre_apellido_dni(@nombre nvarchar(255), @apellido nvarchar(255), @dni decimal(18,0))
+RETURNS INT
+AS
+BEGIN
+	RETURN (select cliente_id
+	from LOS_BORBOTONES.CLIENTE
+	where cliente_nombre = @nombre and cliente_apellido = @apellido and cliente_dni = @dni)
+END
+GO
+
+CREATE FUNCTION LOS_BORBOTONES.get_sucursal_id_by_direccion(@direccion nvarchar(255))
+RETURNS INT
+AS
+BEGIN
+	RETURN (select sucursal_id
+	from LOS_BORBOTONES.SUCURSAL
+	where sucursal_direccion = @direccion)
+END
+GO
+*/
+--------------- STORED PROCEDURES PARA MIGRAR LOS DATOS-----------------
+
+------------------------------ CLIENTES --------------------------------
 
 CREATE PROC LOS_BORBOTONES.migracion_insert_clientes AS
 BEGIN
@@ -652,15 +689,12 @@ BEGIN
 			VUELO_FECHA_LLEGADA,
 			AVION_IDENTIFICADOR,
 			RUTA_AEREA_CODIGO,
-			RUTA_AEREA_CIU_ORIG,
-			RUTA_AEREA_CIU_DEST,
+			LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_ORIG),
+			LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_DEST),
 			LOS_BORBOTONES.get_aerolinea_codigo_by_empresa_razon_social(EMPRESA_RAZON_SOCIAL)
 		ORDER BY VUELO_CODIGO, VUELO_FECHA_SALUDA
 END
 GO
-
------------------------------- FACTURA ------------------------------------------
-
 
 ------------------------------ COMPRAS EMPRESA TURISMO ------------------------------ 
 
@@ -674,7 +708,38 @@ BEGIN
 END
 GO
 
+------------------------------ FACTURA -----------------------------------
+
+CREATE PROC LOS_BORBOTONES.migracion_insert_facturas AS
+BEGIN
+	INSERT INTO LOS_BORBOTONES.FACTURA(factura_numero, factura_fecha)
+		SELECT FACTURA_NRO,
+				FACTURA_FECHA,
+				cliente_id,
+				sucursal_id
+		FROM GD1C2020.gd_esquema.Maestra M
+		JOIN CLIENTE C ON M.CLIENTE_NOMBRE = C.cliente_nombre AND M.CLIENTE_APELLIDO = C.cliente_apellido AND M.CLIENTE_DNI = C.cliente_dni
+		JOIN SUCURSAL ON SUCURSAL_DIR = sucursal_direccion
+		WHERE FACTURA_NRO IS NOT NULL
+		ORDER BY FACTURA_FECHA
+END
+GO
+
+/*CREATE PROC LOS_BORBOTONES.migracion_insert_facturas AS
+BEGIN
+	INSERT INTO LOS_BORBOTONES.FACTURA(factura_numero, factura_fecha, factura_cliente_id, factura_sucursal_id)
+		SELECT FACTURA_NRO,
+				FACTURA_FECHA
+				LOS_BORBOTONES.get_cliente_id_by_nombre_apellido_dni(CLIENTE_NOMBRE, CLIENTE_APELLIDO, CLIENTE_DNI),
+				LOS_BORBOTONES.get_sucursal_id_by_direccion(SUCURSAL_DIR)
+		FROM GD1C2020.gd_esquema.Maestra
+		WHERE FACTURA_NRO IS NOT NULL
+		ORDER BY FACTURA_FECHA
+END
+GO
+--*/
 ------------------------------ PASAJE ------------------------------ 
+
 
 ------------------------------ ESTADIA ------------------------------
 
@@ -688,7 +753,7 @@ GO
 --END
 --GO
 
------------------------------- EJECUTO LOS PROCEDURES ------------------------------
+--------------------------- EJECUCION DE LOS PROCEDURES ------------------------------
 
 EXEC LOS_BORBOTONES.migracion_insert_clientes;
 EXEC LOS_BORBOTONES.migracion_insert_sucursales;
@@ -704,4 +769,5 @@ EXEC LOS_BORBOTONES.migracion_insert_tipos_habitacion;
 EXEC LOS_BORBOTONES.migracion_insert_habitaciones;
 EXEC LOS_BORBOTONES.migracion_insert_compras;
 EXEC LOS_BORBOTONES.migracion_insert_vuelos;
+EXEC LOS_BORBOTONES.migracion_insert_facturas;
 --EXEC LOS_BORBOTONES.migracion_insert_estadia;

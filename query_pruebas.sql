@@ -214,9 +214,6 @@ SELECT DISTINCT COMPRA_NUMERO FROM GD1C2020.gd_esquema.Maestra
 -- Migracion tabla COMPRA
 SELECT COMPRA_NUMERO, COMPRA_FECHA FROM GD1C2020.gd_esquema.Maestra
 GROUP BY COMPRA_NUMERO, COMPRA_FECHA
-ORDER BY COMPRA_FECHA, COMPRA_NUMERO
-
-
 
 
 ------------------------------ PRUEBAS DE LAS MIGRACIONES ------------------------------ 
@@ -261,3 +258,5 @@ SELECT * FROM GD1C2020.LOS_BORBOTONES.HABITACION
 -- Me trae todas las compras de TABLA COMPRA CREADA -- 20438 compras diferentes
 -- Me las trae ordenadas por COMPRA_NUMERO en vez de COMPRA_FECHA (RARO, en el script y la consulta de prueba se ordena primero por FECHA y despues NUMERO)
 SELECT * FROM GD1C2020.LOS_BORBOTONES.COMPRA_EMPRESA_TURISMO
+
+SELECT * FROM LOS_BORBOTONES.TIPO_HABITACION
