@@ -380,8 +380,7 @@ CREATE TABLE LOS_BORBOTONES.ESTADIA (
 	estadia_habitacion_numero decimal(18,0),
 	estadia_precio decimal(18,2),
 	estadia_factura_numero decimal(18,0),
-	estadia_compra_numero decimal(18,0),
-	pasaje_valido bit
+	estadia_compra_numero decimal(18,0)
 )
 
 ------------------------------ CREANDO PRIMARY KEY ------------------------------
@@ -716,7 +715,7 @@ GO
 
 CREATE PROC LOS_BORBOTONES.migracion_insert_facturas AS
 BEGIN
-	INSERT INTO LOS_BORBOTONES.FACTURA(factura_numero, factura_fecha)
+	INSERT INTO LOS_BORBOTONES.FACTURA(factura_numero, factura_fecha, factura_cliente_id, factura_sucursal_id)
 		SELECT FACTURA_NRO,
 				FACTURA_FECHA,
 				cliente_id,
@@ -781,4 +780,4 @@ EXEC LOS_BORBOTONES.migracion_insert_habitaciones;
 EXEC LOS_BORBOTONES.migracion_insert_compras;
 EXEC LOS_BORBOTONES.migracion_insert_vuelos;
 EXEC LOS_BORBOTONES.migracion_insert_facturas;
-EXEC LOS_BORBOTONES.migracion_insert_estadia;
+EXEC LOS_BORBOTONES.migracion_insert_estadias;
