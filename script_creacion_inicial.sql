@@ -678,15 +678,22 @@ GO
 
 ------------------------------ ESTADIA ------------------------------
 
---CREATE PROC LOS_BORBOTONES.migracion_insert_estadia AS
---BEGIN
-	--INSERT INTO LOS_BORBOTONES.ESTADIA(estadia_codigo, estadia_fecha_inicial, estadia_cantidad_noches, estadia_hotel_codigo, estadia_habitacion_numero, estadia_precio, estadia_factura_numero, estadia_compra_numero)
-		--SELECT M.ESTADIA_CODIGO, M.ESTADIA_FECHA_INI, M.ESTADIA_CANTIDAD_NOCHES, HO.hotel_codigo, HA.habitacion_numero
-		--FROM GD1C2020.gd_esquema.Maestra M
-		--INNER JOIN GD1C2020.LOS_BORBOTONES.HABITACION HA ON ...
-		--INNER JOIN GD1C2020.LOS_BORBOTONES.HOTEL HO ON ...
---END
---GO
+CREATE PROC LOS_BORBOTONES.migracion_insert_estadias AS
+BEGIN
+	INSERT INTO LOS_BORBOTONES.ESTADIA(estadia_codigo, estadia_fecha_inicial, estadia_cantidad_noches, estadia_hotel_codigo, estadia_habitacion_numero, estadia_precio, estadia_factura_numero, estadia_compra_numero)
+		SELECT	M.ESTADIA_CODIGO,
+				M.ESTADIA_FECHA_INI,
+				M.ESTADIA_CANTIDAD_NOCHES,
+				LOS_BORBOTONES.get_hotel_codigo_by_calle_y_nro_calle(HOTEL_CALLE, HOTEL_NRO_CALLE),
+				M.HABITACION_NUMERO,
+				M.HABITACION_PRECIO,
+				M.FACTURA_NRO,
+				M.COMPRA_NUMERO
+		FROM GD1C2020.gd_esquema.Maestra M
+		WHERE M.ESTADIA_CODIGO IS NOT NULL AND FACTURA_NRO IS NULL
+		ORDER BY M.ESTADIA_CODIGO
+END
+GO
 
 ------------------------------ EJECUTO LOS PROCEDURES ------------------------------
 
