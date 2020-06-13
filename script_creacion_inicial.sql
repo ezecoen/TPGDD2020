@@ -431,6 +431,7 @@ GO
 
 ------------------------------ FUNCIONES ------------------------------ 
 
+-- Obtengo el codigo de la ciudad utilizando el detalle de la ciudad
 CREATE FUNCTION LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(@detalleCiudad NVARCHAR(255))
 RETURNS INT
 BEGIN
@@ -440,6 +441,7 @@ BEGIN
 END
 GO
 
+-- Obtengo el codigo del hotel utilizando la calle y el numero de calle
 CREATE FUNCTION LOS_BORBOTONES.get_hotel_codigo_by_calle_y_nro_calle (@calle nvarchar(50), @nro_calle decimal(18,0))
 RETURNS INT
 AS
@@ -450,7 +452,7 @@ BEGIN
 END
 GO
 
-
+-- Obtengo el codigo del grupo hotelario utilizando la razon social de la empresa
 CREATE FUNCTION LOS_BORBOTONES.get_grupo_hotelario_codigo_by_empresa_razon_social(@empresa_razon_social nvarchar(255))
 RETURNS INT
 AS
@@ -461,6 +463,7 @@ BEGIN
 END
 GO
 
+-- Obtengo el codigo de aerolinea utilizando la razon social de la empresa
 CREATE FUNCTION LOS_BORBOTONES.get_aerolinea_codigo_by_empresa_razon_social(@empresa_razon_social nvarchar(255))
 RETURNS INT
 AS
@@ -471,6 +474,7 @@ BEGIN
 END
 GO
 
+-- Obtengo el codigo del tipo de butaca utilizando el detalle del tipo de butaca
 CREATE FUNCTION LOS_BORBOTONES.get_tipo_butaca_codigo_by_tipo_butaca_detalle(@tipo_butaca_detalle nvarchar(255))
 RETURNS INT
 AS
@@ -558,7 +562,7 @@ BEGIN
 END
 GO
 
------------------------------- CIUDADES ------------------------------ 
+---------------------------- CIUDADES ------------------------------ 
 
 CREATE PROC LOS_BORBOTONES.migracion_insert_ciudades AS
 BEGIN
@@ -570,7 +574,7 @@ BEGIN
 END
 GO
 
------------------------------- RUTAS AEREAS ------------------------------ 
+---------------------------- RUTAS AEREAS ------------------------------ 
 
 CREATE PROC LOS_BORBOTONES.migracion_insert_rutas_aereas AS
 BEGIN
@@ -583,7 +587,7 @@ BEGIN
 END
 GO
 
------------------------------- TIPOS DE BUTACA ------------------------------
+--------------------------- TIPOS DE BUTACA ------------------------------
 
 CREATE PROC LOS_BORBOTONES.migracion_insert_tipos_butaca AS
 BEGIN
@@ -608,7 +612,7 @@ BEGIN
 END
 GO
 
------------------------------- GRUPOS HOTELARIOS ------------------------------ 
+---------------------------- GRUPOS HOTELARIOS ------------------------------ 
 
 CREATE PROC LOS_BORBOTONES.migracion_insert_grupos_hotelarios AS
 BEGIN
@@ -639,7 +643,7 @@ BEGIN
 END
 GO
 
------------------------------- TIPOS DE HABITACION ------------------------------ 
+--------------------------- TIPOS DE HABITACION ------------------------------ 
 
 CREATE PROC LOS_BORBOTONES.migracion_insert_tipos_habitacion AS
 BEGIN
@@ -652,7 +656,7 @@ BEGIN
 END
 GO
 
----------------------------------- HABITACION ---------------------------------- 
+------------------------------- HABITACION ---------------------------------- 
 
 CREATE PROC LOS_BORBOTONES.migracion_insert_habitaciones AS
 BEGIN
@@ -692,18 +696,19 @@ BEGIN
 				LOS_BORBOTONES.get_aerolinea_codigo_by_empresa_razon_social(EMPRESA_RAZON_SOCIAL)
 		FROM GD1C2020.gd_esquema.Maestra
 		WHERE VUELO_CODIGO IS NOT NULL
-		GROUP BY VUELO_CODIGO, VUELO_FECHA_SALUDA,
-			VUELO_FECHA_LLEGADA,
-			AVION_IDENTIFICADOR,
-			RUTA_AEREA_CODIGO,
-			LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_ORIG),
-			LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_DEST),
-			LOS_BORBOTONES.get_aerolinea_codigo_by_empresa_razon_social(EMPRESA_RAZON_SOCIAL)
+		GROUP BY VUELO_CODIGO,
+				VUELO_FECHA_SALUDA,
+				VUELO_FECHA_LLEGADA,
+				AVION_IDENTIFICADOR,
+				RUTA_AEREA_CODIGO,
+				LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_ORIG),
+				LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_DEST),
+				LOS_BORBOTONES.get_aerolinea_codigo_by_empresa_razon_social(EMPRESA_RAZON_SOCIAL)
 		ORDER BY VUELO_CODIGO, VUELO_FECHA_SALUDA
 END
 GO
 
------------------------------- COMPRAS EMPRESA TURISMO ------------------------------ 
+-------------------------- COMPRAS EMPRESA TURISMO ------------------------------ 
 
 CREATE PROC LOS_BORBOTONES.migracion_insert_compras AS
 BEGIN
@@ -758,7 +763,7 @@ BEGIN
 				DATEADD(DAY, ESTADIA_CANTIDAD_NOCHES, ESTADIA_FECHA_INI),
 				LOS_BORBOTONES.get_hotel_codigo_by_calle_y_nro_calle(HOTEL_CALLE, HOTEL_NRO_CALLE),
 				HABITACION_NUMERO,
-				HABITACION_PRECIO,
+				(HABITACION_PRECIO * ESTADIA_CANTIDAD_NOCHES),
 				FACTURA_NRO,
 				COMPRA_NUMERO
 		FROM GD1C2020.gd_esquema.Maestra
