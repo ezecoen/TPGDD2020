@@ -177,8 +177,8 @@ IF OBJECT_ID('LOS_BORBOTONES.get_sucursal_id_by_direccion') IS NOT NULL
 	DROP FUNCTION LOS_BORBOTONES.get_sucursal_id_by_direccion;
 GO
 
-IF OBJECT_ID('LOS_BORBOTONES.get_butaca_id_by_vuelo_numero_butaca_tipo_butaca') IS NOT NULL
-	DROP FUNCTION LOS_BORBOTONES.get_butaca_id_by_vuelo_numero_butaca_tipo_butaca;
+IF OBJECT_ID('LOS_BORBOTONES.get_butaca_id_by_avion_numero_butaca_tipo_butaca') IS NOT NULL
+	DROP FUNCTION LOS_BORBOTONES.get_butaca_id_by_avion_numero_butaca_tipo_butaca;
 GO
 
 ------------------------------ DROP DE LOS PROCEDURE ------------------------------
@@ -490,7 +490,7 @@ BEGIN
 END
 GO
 
-CREATE FUNCTION LOS_BORBOTONES.get_butaca_id_by_vuelo_numero_butaca_tipo_butaca(@avion nvarchar(50), @butaca_numero decimal(18,0), @tipo_butaca_codigo nvarchar(255))
+CREATE FUNCTION LOS_BORBOTONES.get_butaca_id_by_avion_numero_butaca_tipo_butaca(@avion nvarchar(50), @butaca_numero decimal(18,0), @tipo_butaca_codigo nvarchar(255))
 RETURNS INT
 AS
 BEGIN
