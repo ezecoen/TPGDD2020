@@ -1,7 +1,6 @@
 USE GD1C2020
 GO
 
-
 ------------------------------ DROP DE LAS FOREIGN KEY ------------------------------
 
 ALTER TABLE LOS_BORBOTONES.VUELO DROP CONSTRAINT FK_VUELO_AVION_ID;
@@ -42,7 +41,6 @@ ALTER TABLE LOS_BORBOTONES.ESTADIA DROP CONSTRAINT FK_ESTADIA_FACTURA_NUMERO;
 
 ALTER TABLE LOS_BORBOTONES.ESTADIA DROP CONSTRAINT FK_ESTADIA_COMPRA_NUMERO;
 
-
 ------------------------------ DROP DE LAS PRIMARY KEY ------------------------------
 
 ALTER TABLE LOS_BORBOTONES.CLIENTE DROP CONSTRAINT PK_CLIENTE_ID
@@ -79,8 +77,8 @@ ALTER TABLE LOS_BORBOTONES.PASAJE DROP CONSTRAINT PK_PASAJE_CODIGO
 
 ALTER TABLE LOS_BORBOTONES.ESTADIA DROP CONSTRAINT PK_ESTADIA_CODIGO
 
-
 ------------------------------ DROP DE LAS TABLAS ------------------------------
+
 IF OBJECT_ID('LOS_BORBOTONES.CLIENTE') IS NOT NULL
 	DROP TABLE LOS_BORBOTONES.CLIENTE;
 GO
@@ -149,7 +147,6 @@ IF OBJECT_ID('LOS_BORBOTONES.COMPRA_EMPRESA_TURISMO') IS NOT NULL
 	DROP TABLE LOS_BORBOTONES.COMPRA_EMPRESA_TURISMO;
 GO
 
-
 ------------------------------ DROP DE LAS FUNCIONES ------------------------------
 
 IF OBJECT_ID('LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad') IS NOT NULL
@@ -183,6 +180,7 @@ GO
 IF OBJECT_ID('LOS_BORBOTONES.get_butaca_id_by_vuelo_numero_butaca_tipo_butaca') IS NOT NULL
 	DROP FUNCTION LOS_BORBOTONES.get_butaca_id_by_vuelo_numero_butaca_tipo_butaca;
 GO
+
 ------------------------------ DROP DE LOS PROCEDURE ------------------------------
 
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_clientes') IS NOT NULL
@@ -256,7 +254,6 @@ GO
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_estadias') IS NOT NULL
 	DROP PROCEDURE LOS_BORBOTONES.migracion_insert_estadias;
 GO
-
 
 ------------------------------ DROP DEL SCHEMA ------------------------------
 
@@ -574,7 +571,9 @@ GO
 CREATE PROC LOS_BORBOTONES.migracion_insert_rutas_aereas AS
 BEGIN
 	INSERT INTO LOS_BORBOTONES.RUTA_AEREA(ruta_aerea_codigo, ruta_aerea_ciu_origen, ruta_aerea_ciu_destino)
-		SELECT RA.RUTA_AEREA_CODIGO, LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RA.RUTA_AEREA_CIU_ORIG), LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RA.RUTA_AEREA_CIU_DEST)
+		SELECT 	RA.RUTA_AEREA_CODIGO,
+				LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RA.RUTA_AEREA_CIU_ORIG),
+				LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RA.RUTA_AEREA_CIU_DEST)
 		FROM GD1C2020.gd_esquema.Maestra RA 
 		WHERE RUTA_AEREA_CODIGO IS NOT NULL
 		GROUP BY RA.RUTA_AEREA_CODIGO, RA.RUTA_AEREA_CIU_ORIG, RA.RUTA_AEREA_CIU_DEST
@@ -599,7 +598,9 @@ GO
 CREATE PROC LOS_BORBOTONES.migracion_insert_butacas AS
 BEGIN
 	INSERT INTO LOS_BORBOTONES.BUTACA(butaca_numero, butaca_tipo_butaca_codigo, butaca_avion_id)
-		SELECT BUTACA_NUMERO, LOS_BORBOTONES.get_tipo_butaca_codigo_by_tipo_butaca_detalle(BUTACA_TIPO), AVION_IDENTIFICADOR
+		SELECT 	BUTACA_NUMERO,
+				LOS_BORBOTONES.get_tipo_butaca_codigo_by_tipo_butaca_detalle(BUTACA_TIPO),
+				AVION_IDENTIFICADOR
 		FROM GD1C2020.gd_esquema.Maestra 
 		WHERE BUTACA_NUMERO IS NOT NULL
 		GROUP BY BUTACA_NUMERO, LOS_BORBOTONES.get_tipo_butaca_codigo_by_tipo_butaca_detalle(BUTACA_TIPO), AVION_IDENTIFICADOR
@@ -625,7 +626,7 @@ GO
 CREATE PROC LOS_BORBOTONES.migracion_insert_hoteles AS
 BEGIN
 	INSERT INTO LOS_BORBOTONES.HOTEL(hotel_calle, hotel_nro_calle, hotel_cantidad_estrellas, hotel_grupo_hotelario_codigo)
-		SELECT HOTEL_CALLE,
+		SELECT 	HOTEL_CALLE,
 				HOTEL_NRO_CALLE,
 				HOTEL_CANTIDAD_ESTRELLAS,
 				LOS_BORBOTONES.get_grupo_hotelario_codigo_by_empresa_razon_social(EMPRESA_RAZON_SOCIAL)
@@ -664,12 +665,12 @@ BEGIN
 		FROM gd_esquema.Maestra
 		WHERE ESTADIA_CODIGO IS NOT NULL
 		GROUP BY HABITACION_NUMERO,
-				LOS_BORBOTONES.get_hotel_codigo_by_calle_y_nro_calle(HOTEL_CALLE, HOTEL_NRO_CALLE),
-				HABITACION_PISO,
-				HABITACION_FRENTE,
-				HABITACION_COSTO,
-				HABITACION_PRECIO,
-				TIPO_HABITACION_CODIGO
+				 LOS_BORBOTONES.get_hotel_codigo_by_calle_y_nro_calle(HOTEL_CALLE, HOTEL_NRO_CALLE),
+				 HABITACION_PISO,
+				 HABITACION_FRENTE,
+				 HABITACION_COSTO,
+				 HABITACION_PRECIO,
+				 TIPO_HABITACION_CODIGO
 		ORDER BY 2,1
 END
 GO
@@ -679,7 +680,7 @@ GO
 CREATE PROC LOS_BORBOTONES.migracion_insert_vuelos AS
 BEGIN
 	INSERT INTO LOS_BORBOTONES.VUELO(vuelo_codigo, vuelo_fecha_salida, vuelo_fecha_llegada, vuelo_avion_id, vuelo_ruta_aerea_codigo, vuelo_ruta_aerea_ciu_origen, vuelo_ruta_aerea_ciu_destino, vuelo_aerolinea_codigo)
-		SELECT VUELO_CODIGO,
+		SELECT 	VUELO_CODIGO,
 				VUELO_FECHA_SALUDA,
 				VUELO_FECHA_LLEGADA,
 				AVION_IDENTIFICADOR,
@@ -690,13 +691,13 @@ BEGIN
 		FROM GD1C2020.gd_esquema.Maestra
 		WHERE VUELO_CODIGO IS NOT NULL
 		GROUP BY VUELO_CODIGO,
-				VUELO_FECHA_SALUDA,
-				VUELO_FECHA_LLEGADA,
-				AVION_IDENTIFICADOR,
-				RUTA_AEREA_CODIGO,
-				LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_ORIG),
-				LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_DEST),
-				LOS_BORBOTONES.get_aerolinea_codigo_by_empresa_razon_social(EMPRESA_RAZON_SOCIAL)
+				 VUELO_FECHA_SALUDA,
+				 VUELO_FECHA_LLEGADA,
+				 AVION_IDENTIFICADOR,
+				 RUTA_AEREA_CODIGO,
+				 LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_ORIG),
+				 LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_DEST),
+				 LOS_BORBOTONES.get_aerolinea_codigo_by_empresa_razon_social(EMPRESA_RAZON_SOCIAL)
 		ORDER BY VUELO_CODIGO, VUELO_FECHA_SALUDA
 END
 GO
@@ -718,7 +719,7 @@ GO
 CREATE PROC LOS_BORBOTONES.migracion_insert_facturas AS
 BEGIN
 	INSERT INTO LOS_BORBOTONES.FACTURA(factura_numero, factura_fecha, factura_cliente_id, factura_sucursal_id)
-		SELECT FACTURA_NRO,
+		SELECT 	FACTURA_NRO,
 				FACTURA_FECHA,
 				cliente_id,
 				sucursal_id
@@ -735,7 +736,7 @@ GO
 CREATE PROC LOS_BORBOTONES.migracion_insert_pasajes AS
 BEGIN
 	INSERT INTO LOS_BORBOTONES.PASAJE	
-	SELECT P.PASAJE_CODIGO,
+	SELECT 	P.PASAJE_CODIGO,
 			P.PASAJE_COSTO,
 			P.PASAJE_PRECIO,
 			P.VUELO_CODIGO,
@@ -749,8 +750,6 @@ BEGIN
 	LEFT JOIN gd_esquema.Maestra M ON M.pasaje_codigo = P.PASAJE_CODIGO and m.FACTURA_NRO is not null
 	WHERE P.PASAJE_CODIGO IS NOT NULL AND P.FACTURA_NRO IS NULL
 	ORDER BY m.FACTURA_FECHA desc;
-
-	
 END
 GO
 
@@ -802,7 +801,6 @@ BEGIN
 														AND R.pasaje_butaca_id = P.pasaje_butaca_id
 														AND R.pasaje_codigo != P.pasaje_codigo 
 														AND R.pasaje_factura_numero IS NULL) = 1
-
 END
 GO
 ------------------------------ ESTADIA --------------------------------------------
@@ -823,6 +821,7 @@ BEGIN
 		ORDER BY ESTADIA_CODIGO
 END
 GO
+
 --------------------------- EJECUCION DE LOS PROCEDURES ------------------------------
 
 EXEC LOS_BORBOTONES.migracion_insert_clientes;
