@@ -81,11 +81,6 @@ ALTER TABLE LOS_BORBOTONES.ESTADIA DROP CONSTRAINT PK_ESTADIA_CODIGO
 
 
 ------------------------------ DROP DE LAS TABLAS ------------------------------
-IF OBJECT_ID('LOS_BORBOTONES.CUR_PASAJES') IS NOT NULL
-	CLOSE CUR_PASAJES
-	DEALLOCATE CUR_PASAJES
-GO
-
 IF OBJECT_ID('LOS_BORBOTONES.CLIENTE') IS NOT NULL
 	DROP TABLE LOS_BORBOTONES.CLIENTE;
 GO
@@ -254,6 +249,10 @@ IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_pasajes') IS NOT NULL
 	DROP PROCEDURE LOS_BORBOTONES.migracion_insert_pasajes;
 GO
 
+IF OBJECT_ID('LOS_BORBOTONES.migracion_validar_pasajes') IS NOT NULL
+	DROP PROCEDURE LOS_BORBOTONES.migracion_validar_pasajes;
+GO
+
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_estadias') IS NOT NULL
 	DROP PROCEDURE LOS_BORBOTONES.migracion_insert_estadias;
 GO
@@ -362,8 +361,7 @@ CREATE TABLE LOS_BORBOTONES.FACTURA (
 	factura_numero decimal(18,0) NOT NULL,
 	factura_fecha datetime2(3),
 	factura_cliente_id INT,
-	factura_sucursal_id INT,
-	factura_valida bit
+	factura_sucursal_id INT
 )
 
 CREATE TABLE LOS_BORBOTONES.COMPRA_EMPRESA_TURISMO (
@@ -385,7 +383,7 @@ CREATE TABLE LOS_BORBOTONES.PASAJE (
 CREATE TABLE LOS_BORBOTONES.ESTADIA (
 	estadia_codigo decimal(18,0) NOT NULL,
 	estadia_fecha_inicial datetime2(3),
-	estadia_cantidad_noches decimal(18,0),
+	estadia_fecha_fin datetime2(3),
 	estadia_hotel_codigo INT,
 	estadia_habitacion_numero decimal(18,0),
 	estadia_precio decimal(18,2),
@@ -505,27 +503,6 @@ BEGIN
 END
 GO
 
-/*
-CREATE FUNCTION LOS_BORBOTONES.get_cliente_id_by_nombre_apellido_dni(@nombre nvarchar(255), @apellido nvarchar(255), @dni decimal(18,0))
-RETURNS INT
-AS
-BEGIN
-	RETURN (select cliente_id
-	from LOS_BORBOTONES.CLIENTE
-	where cliente_nombre = @nombre and cliente_apellido = @apellido and cliente_dni = @dni)
-END
-GO
-
-CREATE FUNCTION LOS_BORBOTONES.get_sucursal_id_by_direccion(@direccion nvarchar(255))
-RETURNS INT
-AS
-BEGIN
-	RETURN (select sucursal_id
-	from LOS_BORBOTONES.SUCURSAL
-	where sucursal_direccion = @direccion)
-END
-GO
-*/
 --------------- STORED PROCEDURES PARA MIGRAR LOS DATOS A LAS TABLAS -----------------
 
 ------------------------------ CLIENTES --------------------------------
@@ -644,8 +621,6 @@ END
 GO
 
 ------------------------------ HOTELES ---------------------------------
---nota: agregar en el doc de decisiones del tp que en cada consulta usamos un campo de la tabla (chequeamos si ese campo no es NULL) para asegurarnos
---que solo vamos a recibir las filas que nos interesan. estaria bueno poner esto en el doc y decir que campo elegimos para cada consulta
 
 CREATE PROC LOS_BORBOTONES.migracion_insert_hoteles AS
 BEGIN
@@ -742,12 +717,11 @@ GO
 
 CREATE PROC LOS_BORBOTONES.migracion_insert_facturas AS
 BEGIN
-	INSERT INTO LOS_BORBOTONES.FACTURA(factura_numero, factura_fecha, factura_cliente_id, factura_sucursal_id, factura_valida)
+	INSERT INTO LOS_BORBOTONES.FACTURA(factura_numero, factura_fecha, factura_cliente_id, factura_sucursal_id)
 		SELECT FACTURA_NRO,
 				FACTURA_FECHA,
 				cliente_id,
-				sucursal_id,
-				1
+				sucursal_id
 		FROM GD1C2020.gd_esquema.Maestra M
 		JOIN CLIENTE C ON M.CLIENTE_NOMBRE = C.cliente_nombre AND M.CLIENTE_APELLIDO = C.cliente_apellido AND M.CLIENTE_DNI = C.cliente_dni
 		JOIN SUCURSAL ON SUCURSAL_DIR = sucursal_direccion
@@ -760,122 +734,82 @@ GO
 
 CREATE PROC LOS_BORBOTONES.migracion_insert_pasajes AS
 BEGIN
-	DECLARE
-		@PASAJE_CODIGO DECIMAL(18,0),
-		@PASAJE_COSTO DECIMAL(18,2),
-		@PASAJE_PRECIO DECIMAL(18,2),
-		@VUELO_CODIGO DECIMAL(19,0),
-		@BUTACA_ID INT,
-		@FACTURA_NRO DECIMAL(18,0),
-		@COMPRA_NUMERO DECIMAL(18,0),
-		@VALIDEZ BIT,
-		@FACTURA_DE_LA_VENTA DECIMAL(18,0);
-
-	INSERT INTO LOS_BORBOTONES.PASAJE (pasaje_codigo, pasaje_costo, pasaje_precio, pasaje_vuelo_codigo, pasaje_butaca_id, pasaje_factura_numero, pasaje_compra_numero, pasaje_valido)
-		SELECT
-			P.PASAJE_CODIGO,
+	INSERT INTO LOS_BORBOTONES.PASAJE	
+	SELECT P.PASAJE_CODIGO,
 			P.PASAJE_COSTO,
 			P.PASAJE_PRECIO,
 			P.VUELO_CODIGO,
 			B.BUTACA_ID,
-			FACTURA_NRO,
+			M.FACTURA_NRO,
 			P.COMPRA_NUMERO,
-			1
-		FROM gd_esquema.Maestra P
-		JOIN LOS_BORBOTONES.TIPO_BUTACA ON P.BUTACA_TIPO = tipo_butaca_detalle
-		JOIN LOS_BORBOTONES.BUTACA B ON B.butaca_tipo_butaca_codigo = tipo_butaca_codigo AND B.butaca_avion_id = P.AVION_IDENTIFICADOR AND B.butaca_numero = P.BUTACA_NUMERO
-		WHERE P.PASAJE_CODIGO IS NOT NULL AND P.FACTURA_NRO IS NOT NULL
-		ORDER BY FACTURA_FECHA;
+			1 as pasaje_valido
+	FROM gd_esquema.Maestra P
+	JOIN LOS_BORBOTONES.TIPO_BUTACA ON P.BUTACA_TIPO = tipo_butaca_detalle
+	JOIN LOS_BORBOTONES.BUTACA B ON B.butaca_tipo_butaca_codigo = tipo_butaca_codigo AND B.butaca_avion_id = P.AVION_IDENTIFICADOR AND B.butaca_numero = P.BUTACA_NUMERO
+	LEFT JOIN gd_esquema.Maestra M ON M.pasaje_codigo = P.PASAJE_CODIGO and m.FACTURA_NRO is not null
+	WHERE P.PASAJE_CODIGO IS NOT NULL AND P.FACTURA_NRO IS NULL
+	ORDER BY m.FACTURA_FECHA desc;
 
+	
+END
+GO
 
-	DECLARE CUR_PASAJES CURSOR FOR
-		SELECT P.PASAJE_CODIGO,
-				P.PASAJE_COSTO,
-				P.PASAJE_PRECIO,
-				P.VUELO_CODIGO,
-				B.BUTACA_ID,
-				P.FACTURA_NRO,
-				P.COMPRA_NUMERO,
-				m.pasaje_factura_numero
-		FROM gd_esquema.Maestra P
-		JOIN LOS_BORBOTONES.TIPO_BUTACA ON P.BUTACA_TIPO = tipo_butaca_detalle
-		JOIN LOS_BORBOTONES.BUTACA B ON B.butaca_tipo_butaca_codigo = tipo_butaca_codigo AND B.butaca_avion_id = P.AVION_IDENTIFICADOR AND B.butaca_numero = P.BUTACA_NUMERO
-		LEFT JOIN LOS_BORBOTONES.PASAJE M ON M.pasaje_codigo = P.PASAJE_CODIGO
-		WHERE P.PASAJE_CODIGO IS NOT NULL AND P.FACTURA_NRO IS NULL
-		ORDER BY (SELECT FACTURA_FECHA FROM LOS_BORBOTONES.FACTURA WHERE factura_numero = M.pasaje_factura_numero) DESC;
+-------------------------- INVALIDAR LOS PASAJES REPETIDOS ----------------------------------
 
-	OPEN CUR_PASAJES
+CREATE PROC LOS_BORBOTONES.migracion_validar_pasajes AS
+BEGIN
+	-- PRIMERO SE MARCAN COMO NO VALIDOS AQUELLOS PASAJES QUE ESTEN REPETIDOS Y AMBOS ESTEN VENDIDOS
+	UPDATE P SET P.pasaje_valido = 0
+	FROM LOS_BORBOTONES.PASAJE P
+	JOIN LOS_BORBOTONES.FACTURA F ON F.factura_numero = P.pasaje_factura_numero
+	WHERE P.pasaje_factura_numero IS NOT NULL AND (SELECT COUNT(*)
+													FROM LOS_BORBOTONES.PASAJE R
+													JOIN LOS_BORBOTONES.FACTURA G ON G.factura_numero = R.pasaje_factura_numero
+													WHERE R.pasaje_vuelo_codigo = P.pasaje_vuelo_codigo 
+														AND R.pasaje_butaca_id = P.pasaje_butaca_id 
+														AND R.pasaje_codigo != P.pasaje_codigo 
+														AND G.factura_numero IS NOT NULL) >= 1
+														AND (SELECT G.factura_fecha
+																FROM LOS_BORBOTONES.PASAJE R
+																JOIN LOS_BORBOTONES.FACTURA G ON G.factura_numero = R.pasaje_factura_numero
+																WHERE R.pasaje_vuelo_codigo = P.pasaje_vuelo_codigo 
+																	AND R.pasaje_butaca_id = P.pasaje_butaca_id 
+																	AND R.pasaje_codigo != P.pasaje_codigo) < F.factura_fecha
 
-	FETCH NEXT FROM CUR_PASAJES INTO
-		@PASAJE_CODIGO,
-		@PASAJE_COSTO,
-		@PASAJE_PRECIO,
-		@VUELO_CODIGO,
-		@BUTACA_ID,
-		@FACTURA_NRO,
-		@COMPRA_NUMERO,
-		@FACTURA_DE_LA_VENTA;
+	-- SE MARCAN COMO NO VALIDOS LOS PASAJES QUE ESTAN REPETIDOS Y UN PASAJE ESTE VENDIDO Y EL OTRO NO VENDIDO
+	UPDATE P SET P.pasaje_valido = 0
+	FROM LOS_BORBOTONES.PASAJE P
+	WHERE P.pasaje_factura_numero IS NULL AND (SELECT COUNT(*)
+												FROM LOS_BORBOTONES.PASAJE R
+												WHERE R.pasaje_vuelo_codigo = P.pasaje_vuelo_codigo 
+													AND R.pasaje_butaca_id = P.pasaje_butaca_id
+													AND R.pasaje_codigo != P.pasaje_codigo 
+													AND R.pasaje_factura_numero IS NOT NULL) >= 1
+	
+	-- SE MARCAN COMO NO VALIDOS LOS PASAJES QUE ESTAN REPETIDOS Y ESTAN AMBOS COMPRADOS PERO NO VENDIDOS
+	UPDATE P SET P.pasaje_valido = 0
+	FROM LOS_BORBOTONES.PASAJE P
+	JOIN LOS_BORBOTONES.COMPRA_EMPRESA_TURISMO ON P.pasaje_compra_numero = compra_empr_numero
+	WHERE P.pasaje_factura_numero IS NULL AND (SELECT COUNT(*)
+												FROM LOS_BORBOTONES.PASAJE R
+												WHERE R.pasaje_vuelo_codigo = P.pasaje_vuelo_codigo 
+													AND R.pasaje_butaca_id = P.pasaje_butaca_id
+													AND R.pasaje_codigo != P.pasaje_codigo 
+													AND R.pasaje_factura_numero IS NULL) >= 1
+												AND (SELECT pasaje_valido
+														FROM LOS_BORBOTONES.PASAJE R
+														WHERE R.pasaje_vuelo_codigo = P.pasaje_vuelo_codigo 
+														AND R.pasaje_butaca_id = P.pasaje_butaca_id
+														AND R.pasaje_codigo != P.pasaje_codigo 
+														AND R.pasaje_factura_numero IS NULL) = 1
 
-	WHILE @@FETCH_STATUS = 0
-	BEGIN
-		-- Me fijo si hay otro pasaje previamente cargado que sea del mismo vuelo y butaca
-			-- En ese caso marco el pasaje comprado como NO valido aunque no haya sino vendido (existen casos de estos en la tabla maestra)
-			-- Si NO hay otro pasaje para el mismo vuelo y misma butaca, marco el pasaje como valido (para que pueda ser vendido por ejemplo)
-		
-		IF (@FACTURA_DE_LA_VENTA = NULL) -- Si NO esta previamente cargado el pasaje en la tabla (porque no fue vendido) lo agregamos
-		BEGIN
-			
-			IF (SELECT COUNT(*) FROM PASAJE WHERE pasaje_vuelo_codigo = @VUELO_CODIGO AND pasaje_butaca_id = @BUTACA_ID) >= 1 
-				SET @VALIDEZ = 0 
-			ELSE
-				SET @VALIDEZ = 1
-
-			INSERT INTO LOS_BORBOTONES.PASAJE (
-				pasaje_codigo,
-				pasaje_costo,
-				pasaje_precio,
-				pasaje_vuelo_codigo,
-				pasaje_butaca_id,
-				pasaje_factura_numero,
-				pasaje_compra_numero,
-				pasaje_valido
-			)VALUES (
-				@PASAJE_CODIGO,
-				@PASAJE_COSTO,
-				@PASAJE_PRECIO,
-				@VUELO_CODIGO,
-				@BUTACA_ID,
-				NULL,
-				@COMPRA_NUMERO,
-				@VALIDEZ
-			);
-		END
-		ELSE
-		BEGIN
-			IF (SELECT COUNT(*) FROM PASAJE WHERE pasaje_vuelo_codigo = @VUELO_CODIGO AND pasaje_butaca_id = @BUTACA_ID AND pasaje_valido = 1) > 1
-				UPDATE LOS_BORBOTONES.PASAJE SET pasaje_valido = 0 WHERE pasaje_codigo = @PASAJE_CODIGO
-		END
-
-		FETCH NEXT FROM CUR_PASAJES INTO
-			@PASAJE_CODIGO,
-			@PASAJE_COSTO,
-			@PASAJE_PRECIO,
-			@VUELO_CODIGO,
-			@BUTACA_ID,
-			@FACTURA_NRO,
-			@COMPRA_NUMERO,
-			@FACTURA_DE_LA_VENTA
-	END
-
-	CLOSE CUR_PASAJES
-	DEALLOCATE CUR_PASAJES
 END
 GO
 ------------------------------ ESTADIA --------------------------------------------
 
 CREATE PROC LOS_BORBOTONES.migracion_insert_estadias AS
 BEGIN
-	INSERT INTO LOS_BORBOTONES.ESTADIA(estadia_codigo, estadia_fecha_inicial, estadia_cantidad_noches, estadia_hotel_codigo, estadia_habitacion_numero, estadia_precio, estadia_factura_numero, estadia_compra_numero)
+	INSERT INTO LOS_BORBOTONES.ESTADIA(estadia_codigo, estadia_fecha_inicial, estadia_fecha_fin, estadia_hotel_codigo, estadia_habitacion_numero, estadia_precio, estadia_factura_numero, estadia_compra_numero)
 		SELECT	ESTADIA_CODIGO,
 				ESTADIA_FECHA_INI,
 				DATEADD(DAY, ESTADIA_CANTIDAD_NOCHES, ESTADIA_FECHA_INI),
@@ -906,5 +840,6 @@ EXEC LOS_BORBOTONES.migracion_insert_habitaciones;
 EXEC LOS_BORBOTONES.migracion_insert_vuelos;
 EXEC LOS_BORBOTONES.migracion_insert_compras;
 EXEC LOS_BORBOTONES.migracion_insert_facturas;
-EXEC LOS_BORBOTONES.migracion_insert_pasajes
+EXEC LOS_BORBOTONES.migracion_insert_pasajes;
+EXEC LOS_BORBOTONES.migracion_validar_pasajes;
 EXEC LOS_BORBOTONES.migracion_insert_estadias;

@@ -1,20 +1,72 @@
 USE GD1C2020
 
+-- esta query te trae todos los pasajes que tienen que estar en la tabla de pasajes pero estan todos marcados como validos
+DELETE FROM LOS_BORBOTONES.PASAJE
 
-SELECT P.PASAJE_CODIGO,
-				P.PASAJE_COSTO,
-				P.PASAJE_PRECIO,
-				P.VUELO_CODIGO,
-				B.BUTACA_ID,
-				P.FACTURA_NRO,
-				P.COMPRA_NUMERO,
-				m.pasaje_factura_numero
-		FROM gd_esquema.Maestra P
-		JOIN LOS_BORBOTONES.TIPO_BUTACA ON P.BUTACA_TIPO = tipo_butaca_detalle
-		JOIN LOS_BORBOTONES.BUTACA B ON B.butaca_tipo_butaca_codigo = tipo_butaca_codigo AND B.butaca_avion_id = P.AVION_IDENTIFICADOR AND B.butaca_numero = P.BUTACA_NUMERO
-		LEFT JOIN LOS_BORBOTONES.PASAJE M ON M.pasaje_codigo = P.PASAJE_CODIGO
-		WHERE P.PASAJE_CODIGO IS NOT NULL AND P.FACTURA_NRO IS NULL
-		ORDER BY (SELECT FACTURA_FECHA FROM LOS_BORBOTONES.FACTURA WHERE factura_numero = M.pasaje_factura_numero) desc;
+INSERT INTO LOS_BORBOTONES.PASAJE	
+	SELECT P.PASAJE_CODIGO,
+			P.PASAJE_COSTO,
+			P.PASAJE_PRECIO,
+			P.VUELO_CODIGO,
+			B.BUTACA_ID,
+			M.FACTURA_NRO,
+			P.COMPRA_NUMERO,
+			1 as pasaje_valido
+	FROM gd_esquema.Maestra P
+	JOIN LOS_BORBOTONES.TIPO_BUTACA ON P.BUTACA_TIPO = tipo_butaca_detalle
+	JOIN LOS_BORBOTONES.BUTACA B ON B.butaca_tipo_butaca_codigo = tipo_butaca_codigo AND B.butaca_avion_id = P.AVION_IDENTIFICADOR AND B.butaca_numero = P.BUTACA_NUMERO
+	LEFT JOIN gd_esquema.Maestra M ON M.pasaje_codigo = P.PASAJE_CODIGO and m.FACTURA_NRO is not null
+	WHERE P.PASAJE_CODIGO IS NOT NULL AND P.FACTURA_NRO IS NULL
+	ORDER BY m.FACTURA_FECHA desc;
+
+UPDATE P SET P.pasaje_valido = 0
+FROM LOS_BORBOTONES.PASAJE P
+JOIN LOS_BORBOTONES.FACTURA F ON F.factura_numero = P.pasaje_factura_numero
+WHERE P.pasaje_factura_numero IS NOT NULL AND (SELECT COUNT(*)
+												FROM LOS_BORBOTONES.PASAJE R
+												JOIN LOS_BORBOTONES.FACTURA G ON G.factura_numero = R.pasaje_factura_numero
+												WHERE R.pasaje_vuelo_codigo = P.pasaje_vuelo_codigo 
+													AND R.pasaje_butaca_id = P.pasaje_butaca_id 
+													AND R.pasaje_codigo != P.pasaje_codigo 
+													AND G.factura_numero IS NOT NULL) >= 1
+													AND (SELECT G.factura_fecha
+															FROM LOS_BORBOTONES.PASAJE R
+															JOIN LOS_BORBOTONES.FACTURA G ON G.factura_numero = R.pasaje_factura_numero
+															WHERE R.pasaje_vuelo_codigo = P.pasaje_vuelo_codigo 
+																AND R.pasaje_butaca_id = P.pasaje_butaca_id 
+																AND R.pasaje_codigo != P.pasaje_codigo) < F.factura_fecha
+
+
+UPDATE P SET P.pasaje_valido = 0
+FROM LOS_BORBOTONES.PASAJE P
+WHERE P.pasaje_factura_numero IS NULL AND (SELECT COUNT(*)
+											FROM LOS_BORBOTONES.PASAJE R
+											WHERE R.pasaje_vuelo_codigo = P.pasaje_vuelo_codigo 
+												AND R.pasaje_butaca_id = P.pasaje_butaca_id
+												AND R.pasaje_codigo != P.pasaje_codigo 
+												AND R.pasaje_factura_numero IS NOT NULL) >= 1
+
+UPDATE P SET P.pasaje_valido = 0
+FROM LOS_BORBOTONES.PASAJE P
+JOIN LOS_BORBOTONES.COMPRA_EMPRESA_TURISMO ON P.pasaje_compra_numero = compra_empr_numero
+WHERE P.pasaje_factura_numero IS NULL AND (SELECT COUNT(*)
+											FROM LOS_BORBOTONES.PASAJE R
+											WHERE R.pasaje_vuelo_codigo = P.pasaje_vuelo_codigo 
+												AND R.pasaje_butaca_id = P.pasaje_butaca_id
+												AND R.pasaje_codigo != P.pasaje_codigo 
+												AND R.pasaje_factura_numero IS NULL) >= 1
+											AND (SELECT pasaje_valido
+													FROM LOS_BORBOTONES.PASAJE R
+													WHERE R.pasaje_vuelo_codigo = P.pasaje_vuelo_codigo 
+													AND R.pasaje_butaca_id = P.pasaje_butaca_id
+													AND R.pasaje_codigo != P.pasaje_codigo 
+													AND R.pasaje_factura_numero IS NULL) = 1
+
+
+SELECT * FROM LOS_BORBOTONES.PASAJE LEFT JOIN LOS_BORBOTONES.FACTURA ON factura_numero = pasaje_factura_numero ORDER BY factura_fecha
+
+SELECT * FROM LOS_BORBOTONES.PASAJE WHERE pasaje_vuelo_codigo = 6667 AND pasaje_butaca_id = 1830
+
 
 SELECT PASAJE_CODIGO FROM gd_esquema.Maestra GROUP BY PASAJE_CODIGO HAVING COUNT(*)>2
 SELECT PASAJE_CODIGO,
