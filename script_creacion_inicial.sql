@@ -437,55 +437,61 @@ ALTER TABLE LOS_BORBOTONES.ESTADIA ADD CONSTRAINT FK_ESTADIA_FACTURA_NUMERO FORE
 ALTER TABLE LOS_BORBOTONES.ESTADIA ADD CONSTRAINT FK_ESTADIA_COMPRA_NUMERO FOREIGN KEY (estadia_compra_numero) REFERENCES LOS_BORBOTONES.COMPRA_EMPRESA_TURISMO(compra_empr_numero);
 GO
 
------------------------------- LA SUPER MEGA MAGNIFICA MIGRACION ------------------------------
+------------------------------ MIGRACION ------------------------------
 
 ------------------------------ FUNCIONES ------------------------------ 
 
+-- Obtengo el codigo de la ciudad utilizando el detalle de la ciudad
 CREATE FUNCTION LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(@detalleCiudad NVARCHAR(255))
 RETURNS INT
 BEGIN
-	RETURN (SELECT ciudad_codigo FROM LOS_BORBOTONES.CIUDAD WHERE ciudad_detalle = @detalleCiudad)
+	RETURN (SELECT ciudad_codigo
+			FROM LOS_BORBOTONES.CIUDAD
+			WHERE ciudad_detalle = @detalleCiudad)
 END
 GO
 
+-- Obtengo el codigo del hotel utilizando la calle y el numero de calle
 CREATE FUNCTION LOS_BORBOTONES.get_hotel_codigo_by_calle_y_nro_calle (@calle nvarchar(50), @nro_calle decimal(18,0))
 RETURNS INT
 AS
 BEGIN
-	RETURN (select hotel_codigo 
-	from LOS_BORBOTONES.HOTEL 
-	where hotel_calle = @calle and hotel_nro_calle = @nro_calle)
+	RETURN (SELECT hotel_codigo 
+			FROM LOS_BORBOTONES.HOTEL 
+			WHERE hotel_calle = @calle AND hotel_nro_calle = @nro_calle)
 END
 GO
 
-
+-- Obtengo el codigo del grupo hotelario utilizando la razon social de la empresa
 CREATE FUNCTION LOS_BORBOTONES.get_grupo_hotelario_codigo_by_empresa_razon_social(@empresa_razon_social nvarchar(255))
 RETURNS INT
 AS
 BEGIN
-	RETURN (select grupo_hotelario_codigo
-	from LOS_BORBOTONES.GRUPO_HOTELARIO 
-	where grupo_hotelario_razon_social = @empresa_razon_social)
+	RETURN (SELECT grupo_hotelario_codigo
+			FROM LOS_BORBOTONES.GRUPO_HOTELARIO 
+			WHERE grupo_hotelario_razon_social = @empresa_razon_social)
 END
 GO
 
+-- Obtengo el codigo de aerolinea utilizando la razon social de la empresa
 CREATE FUNCTION LOS_BORBOTONES.get_aerolinea_codigo_by_empresa_razon_social(@empresa_razon_social nvarchar(255))
 RETURNS INT
 AS
 BEGIN
-	RETURN (select aerolinea_codigo
-	from LOS_BORBOTONES.AEROLINEA 
-	where aerolinea_razon_social = @empresa_razon_social)
+	RETURN (SELECT aerolinea_codigo
+			FROM LOS_BORBOTONES.AEROLINEA 
+			WHERE aerolinea_razon_social = @empresa_razon_social)
 END
 GO
 
+-- Obtengo el codigo del tipo de butaca utilizando el detalle del tipo de butaca
 CREATE FUNCTION LOS_BORBOTONES.get_tipo_butaca_codigo_by_tipo_butaca_detalle(@tipo_butaca_detalle nvarchar(255))
 RETURNS INT
 AS
 BEGIN
-	RETURN (select tipo_butaca_codigo
-	from LOS_BORBOTONES.TIPO_BUTACA
-	where tipo_butaca_detalle = @tipo_butaca_detalle)
+	RETURN (SELECT tipo_butaca_codigo
+			FROM LOS_BORBOTONES.TIPO_BUTACA
+			WHERE tipo_butaca_detalle = @tipo_butaca_detalle)
 END
 GO
 
@@ -574,7 +580,7 @@ BEGIN
 END
 GO
 
------------------------------- CIUDADES ------------------------------ 
+---------------------------- CIUDADES ------------------------------ 
 
 CREATE PROC LOS_BORBOTONES.migracion_insert_ciudades AS
 BEGIN
@@ -708,13 +714,14 @@ BEGIN
 				LOS_BORBOTONES.get_aerolinea_codigo_by_empresa_razon_social(EMPRESA_RAZON_SOCIAL)
 		FROM GD1C2020.gd_esquema.Maestra
 		WHERE VUELO_CODIGO IS NOT NULL
-		GROUP BY VUELO_CODIGO, VUELO_FECHA_SALUDA,
-			VUELO_FECHA_LLEGADA,
-			AVION_IDENTIFICADOR,
-			RUTA_AEREA_CODIGO,
-			LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_ORIG),
-			LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_DEST),
-			LOS_BORBOTONES.get_aerolinea_codigo_by_empresa_razon_social(EMPRESA_RAZON_SOCIAL)
+		GROUP BY VUELO_CODIGO,
+				VUELO_FECHA_SALUDA,
+				VUELO_FECHA_LLEGADA,
+				AVION_IDENTIFICADOR,
+				RUTA_AEREA_CODIGO,
+				LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_ORIG),
+				LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_DEST),
+				LOS_BORBOTONES.get_aerolinea_codigo_by_empresa_razon_social(EMPRESA_RAZON_SOCIAL)
 		ORDER BY VUELO_CODIGO, VUELO_FECHA_SALUDA
 END
 GO
@@ -869,17 +876,17 @@ GO
 CREATE PROC LOS_BORBOTONES.migracion_insert_estadias AS
 BEGIN
 	INSERT INTO LOS_BORBOTONES.ESTADIA(estadia_codigo, estadia_fecha_inicial, estadia_cantidad_noches, estadia_hotel_codigo, estadia_habitacion_numero, estadia_precio, estadia_factura_numero, estadia_compra_numero)
-		SELECT	M.ESTADIA_CODIGO,
-				M.ESTADIA_FECHA_INI,
-				M.ESTADIA_CANTIDAD_NOCHES,
+		SELECT	ESTADIA_CODIGO,
+				ESTADIA_FECHA_INI,
+				DATEADD(DAY, ESTADIA_CANTIDAD_NOCHES, ESTADIA_FECHA_INI),
 				LOS_BORBOTONES.get_hotel_codigo_by_calle_y_nro_calle(HOTEL_CALLE, HOTEL_NRO_CALLE),
-				M.HABITACION_NUMERO,
-				M.HABITACION_PRECIO,
-				M.FACTURA_NRO,
-				M.COMPRA_NUMERO
-		FROM GD1C2020.gd_esquema.Maestra M
-		WHERE M.ESTADIA_CODIGO IS NOT NULL AND FACTURA_NRO IS NULL
-		ORDER BY M.ESTADIA_CODIGO
+				HABITACION_NUMERO,
+				(HABITACION_PRECIO * ESTADIA_CANTIDAD_NOCHES),
+				FACTURA_NRO,
+				COMPRA_NUMERO
+		FROM GD1C2020.gd_esquema.Maestra
+		WHERE ESTADIA_CODIGO IS NOT NULL AND FACTURA_NRO IS NOT NULL
+		ORDER BY ESTADIA_CODIGO
 END
 GO
 --------------------------- EJECUCION DE LOS PROCEDURES ------------------------------
@@ -896,8 +903,8 @@ EXEC LOS_BORBOTONES.migracion_insert_grupos_hotelarios;
 EXEC LOS_BORBOTONES.migracion_insert_hoteles;
 EXEC LOS_BORBOTONES.migracion_insert_tipos_habitacion;
 EXEC LOS_BORBOTONES.migracion_insert_habitaciones;
-EXEC LOS_BORBOTONES.migracion_insert_compras;
 EXEC LOS_BORBOTONES.migracion_insert_vuelos;
+EXEC LOS_BORBOTONES.migracion_insert_compras;
 EXEC LOS_BORBOTONES.migracion_insert_facturas;
 EXEC LOS_BORBOTONES.migracion_insert_pasajes
 EXEC LOS_BORBOTONES.migracion_insert_estadias;
