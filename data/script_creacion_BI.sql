@@ -1,0 +1,114 @@
+USE GD1C2020
+GO
+
+------------------------------ DROP DE LAS TABLAS ------------------------------
+
+IF OBJECT_ID('LOS_BORBOTONES.DIMENSION_CLIENTE') IS NOT NULL
+	DROP TABLE LOS_BORBOTONES.DIMENSION_CLIENTE;
+GO
+
+IF OBJECT_ID('LOS_BORBOTONES.DIMENSION_TIEMPO') IS NOT NULL
+	DROP TABLE LOS_BORBOTONES.DIMENSION_TIEMPO;
+GO
+
+IF OBJECT_ID('LOS_BORBOTONES.DIMENSION_TIPO_HABITACION') IS NOT NULL
+	DROP TABLE LOS_BORBOTONES.DIMENSION_TIPO_HABITACION;
+GO
+
+IF OBJECT_ID('LOS_BORBOTONES.DIMENSION_TIPO_PASAJE') IS NOT NULL
+	DROP TABLE LOS_BORBOTONES.DIMENSION_TIPO_PASAJE;
+GO
+
+IF OBJECT_ID('LOS_BORBOTONES.DIMENSION_AVION') IS NOT NULL
+	DROP TABLE LOS_BORBOTONES.DIMENSION_AVION;
+GO
+
+IF OBJECT_ID('LOS_BORBOTONES.DIMENSION_RUTA_AEREA') IS NOT NULL
+	DROP TABLE LOS_BORBOTONES.DIMENSION_RUTA_AEREA;
+GO
+
+IF OBJECT_ID('LOS_BORBOTONES.DIMENSION_CIUDAD') IS NOT NULL
+	DROP TABLE LOS_BORBOTONES.DIMENSION_CIUDAD;
+GO
+
+IF OBJECT_ID('LOS_BORBOTONES.DIMENSION_AEROLINEA') IS NOT NULL
+	DROP TABLE LOS_BORBOTONES.DIMENSION_AEROLINEA;
+GO
+
+IF OBJECT_ID('LOS_BORBOTONES.DIMENSION_GRUPO_HOTELARIO') IS NOT NULL
+	DROP TABLE LOS_BORBOTONES.DIMENSION_GRUPO_HOTELARIO;
+GO
+
+------------------------------ DROP DEL SCHEMA ------------------------------
+
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'LOS_BORBOTONES')
+  	BEGIN
+    	EXEC ('CREATE SCHEMA LOS_BORBOTONES');
+  	END
+GO
+
+------------------------------ CREACION DE TABLAS ------------------------------
+
+------------------------ DIMENSIONES ------------------------
+
+CREATE TABLE LOS_BORBOTONES.DIMENSION_CLIENTE (
+	dim_cliente_id INT,
+	dim_cliente_apellido nvarchar(255),
+	dim_cliente_nombre nvarchar(255),
+	dim_cliente_dni decimal (18,0),
+	dim_cliente_fecha_nac datetime2(3),
+	dim_cliente_mail nvarchar(255),
+	dim_cliente_telefono decimal(18,0)
+)
+
+CREATE TABLE LOS_BORBOTONES.DIMENSION_TIEMPO (
+	dim_tiempo_id INT,
+	dim_tiempo_fecha datetime2(3),
+	dim_tiempo_mes INT,
+	dim_tiempo_anio INT
+)
+
+CREATE TABLE LOS_BORBOTONES.DIMENSION_TIPO_HABITACION (
+	dim_tipo_habitacion_codigo decimal(18,0),
+	dim_tipo_habitacion_detalle nvarchar(255)
+)
+
+CREATE TABLE LOS_BORBOTONES.DIMENSION_TIPO_PASAJE (
+	
+)
+
+CREATE TABLE LOS_BORBOTONES.DIMENSION_AVION (
+	dim_avion_id nvarchar(50),
+	dim_avion_modelo nvarchar(50)
+)
+
+CREATE TABLE LOS_BORBOTONES.DIMENSION_RUTA_AEREA (
+	dim_ruta_aerea_codigo decimal(18,0),
+	dim_ruta_aerea_ciu_origen INT,
+	dim_ruta_aerea_ciu_dest INT
+)
+
+CREATE TABLE LOS_BORBOTONES.DIMENSION_CIUDAD (
+	dim_ciudad_codigo INT,
+	dim_ciudad_detalle nvarchar(255)
+)
+
+CREATE TABLE LOS_BORBOTONES.DIMENSION_AEROLINEA (
+	dim_aerolinea_codigo INT,
+	dim_aerolinea_razon_social nvarchar(255)
+)
+
+CREATE TABLE LOS_BORBOTONES.DIMENSION_GRUPO_HOTELARIO (
+	dim_grupo_hotelario_codigo INT,
+	dim_grupo_hotelario_razon_social nvarchar(255)
+)
+
+------------------------ HECHOS ------------------------
+
+CREATE TABLE LOS_BORBOTONES.HECHO_VENTAS (
+
+)
+
+CREATE TABLE LOS_BORBOTONES.HECHO_COMPRA (
+
+)
