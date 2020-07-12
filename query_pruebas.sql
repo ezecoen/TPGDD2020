@@ -5,9 +5,10 @@ select * from LOS_BORBOTONES.TIPO_HABITACION
 
 select * from gd_esquema.Maestra
 
+select * from LOS_BORBOTONES.vuelo
 
 
-select str(month(factura_fecha))+str(year(factura_fecha)),
+select count(*),'0'+ltrim(str(month(factura_fecha)))+ltrim(str(year(factura_fecha))),
 		 vuelo_aerolinea_codigo,
 		 year(getdate())-year(cliente_fecha_nac),
 		 factura_sucursal_id,
@@ -23,13 +24,38 @@ join LOS_BORBOTONES.FACTURA on factura_numero = pasaje_factura_numero
 join LOS_BORBOTONES.VUELO on vuelo_codigo = pasaje_vuelo_codigo
 join LOS_BORBOTONES.CLIENTE on cliente_id = factura_cliente_id
 join LOS_BORBOTONES.BUTACA on butaca_id = pasaje_butaca_id
-group by str(month(factura_fecha))+str(year(factura_fecha)),
+group by '0'+ltrim(str(month(factura_fecha)))+ltrim(str(year(factura_fecha))),
 		 vuelo_aerolinea_codigo,
 		 year(getdate())-year(cliente_fecha_nac),
 		 factura_sucursal_id,
 		 vuelo_avion_id,
 		 butaca_tipo_butaca_codigo,
 		 vuelo_ruta_aerea_id
+
+
+
+select count(*),'0'+ltrim(str(month(factura_fecha)))+ltrim(str(year(factura_fecha))),
+		 hotel_grupo_hotelario_codigo,
+		 year(getdate())-year(cliente_fecha_nac),
+		 factura_sucursal_id,
+		 habitacion_tipo_habitacion_codigo,
+		 avg(estadia_costo),
+		 avg(estadia_precio),
+		 count(*),
+		 sum(estadia_precio)-sum(estadia_costo)
+from LOS_BORBOTONES.ESTADIA
+join LOS_BORBOTONES.FACTURA on factura_numero = estadia_factura_numero
+join LOS_BORBOTONES.HOTEL on hotel_codigo = estadia_hotel_codigo
+join LOS_BORBOTONES.CLIENTE on cliente_id = factura_cliente_id
+join LOS_BORBOTONES.HABITACION on habitacion_numero = estadia_habitacion_numero and habitacion_hotel_codigo = estadia_hotel_codigo
+group by '0'+ltrim(str(month(factura_fecha)))+ltrim(str(year(factura_fecha))),
+		 hotel_grupo_hotelario_codigo,
+		 year(getdate())-year(cliente_fecha_nac),
+		 factura_sucursal_id,
+		 habitacion_tipo_habitacion_codigo,
+
+
+
 
 
 
