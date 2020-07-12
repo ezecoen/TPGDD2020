@@ -1,5 +1,38 @@
 USE GD1C2020
 
+
+select * from LOS_BORBOTONES.TIPO_HABITACION
+
+select * from gd_esquema.Maestra
+
+
+
+select str(month(factura_fecha))+str(year(factura_fecha)),
+		 vuelo_aerolinea_codigo,
+		 year(getdate())-year(cliente_fecha_nac),
+		 factura_sucursal_id,
+		 vuelo_avion_id,
+		 butaca_tipo_butaca_codigo,
+		 vuelo_ruta_aerea_id,
+		 avg(pasaje_costo),
+		 avg(pasaje_precio),
+		 count(*),
+		 sum(pasaje_precio)-sum(pasaje_costo)
+from LOS_BORBOTONES.PASAJE
+join LOS_BORBOTONES.FACTURA on factura_numero = pasaje_factura_numero
+join LOS_BORBOTONES.VUELO on vuelo_codigo = pasaje_vuelo_codigo
+join LOS_BORBOTONES.CLIENTE on cliente_id = factura_cliente_id
+join LOS_BORBOTONES.BUTACA on butaca_id = pasaje_butaca_id
+group by str(month(factura_fecha))+str(year(factura_fecha)),
+		 vuelo_aerolinea_codigo,
+		 year(getdate())-year(cliente_fecha_nac),
+		 factura_sucursal_id,
+		 vuelo_avion_id,
+		 butaca_tipo_butaca_codigo,
+		 vuelo_ruta_aerea_id
+
+
+
 -- esta query te trae todos los pasajes que tienen que estar en la tabla de pasajes pero estan todos marcados como validos
 DELETE FROM LOS_BORBOTONES.PASAJE
 
