@@ -384,8 +384,10 @@ CREATE TABLE LOS_BORBOTONES.ESTADIA (
 	estadia_codigo decimal(18,0) NOT NULL,
 	estadia_fecha_inicial datetime2(3),
 	estadia_fecha_fin datetime2(3),
+	estadia_cantidad_noches decimal(18,0),
 	estadia_hotel_codigo INT,
 	estadia_habitacion_numero decimal(18,0),
+	estadia_costo decimal(18,2),
 	estadia_precio decimal(18,2),
 	estadia_factura_numero decimal(18,0),
 	estadia_compra_numero decimal(18,0)
@@ -817,12 +819,14 @@ GO
 
 CREATE PROC LOS_BORBOTONES.migracion_insert_estadias AS
 BEGIN
-	INSERT INTO LOS_BORBOTONES.ESTADIA(estadia_codigo, estadia_fecha_inicial, estadia_fecha_fin, estadia_hotel_codigo, estadia_habitacion_numero, estadia_precio, estadia_factura_numero, estadia_compra_numero)
+	INSERT INTO LOS_BORBOTONES.ESTADIA(estadia_codigo, estadia_fecha_inicial, estadia_fecha_fin, estadia_cantidad_noches, estadia_hotel_codigo, estadia_habitacion_numero, estadia_costo, estadia_precio, estadia_factura_numero, estadia_compra_numero)
 		SELECT	ESTADIA_CODIGO,
 				ESTADIA_FECHA_INI,
 				DATEADD(DAY, ESTADIA_CANTIDAD_NOCHES, ESTADIA_FECHA_INI),
+				ESTADIA_CANTIDAD_NOCHES,
 				LOS_BORBOTONES.get_hotel_codigo_by_calle_y_nro_calle(HOTEL_CALLE, HOTEL_NRO_CALLE),
 				HABITACION_NUMERO,
+				(HABITACION_COSTO * ESTADIA_CANTIDAD_NOCHES),
 				(HABITACION_PRECIO * ESTADIA_CANTIDAD_NOCHES),
 				FACTURA_NRO,
 				COMPRA_NUMERO
