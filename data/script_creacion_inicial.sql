@@ -41,7 +41,7 @@ GO
 
 --ALTER TABLE LOS_BORBOTONES.ESTADIA DROP CONSTRAINT FK_ESTADIA_COMPRA_NUMERO;
 
--------------------------------- DROP DE LAS PRIMARY KEY ------------------------------
+------------------------------ DROP DE LAS PRIMARY KEY ------------------------------
 
 --ALTER TABLE LOS_BORBOTONES.CLIENTE DROP CONSTRAINT PK_CLIENTE_ID
 
@@ -181,6 +181,10 @@ IF OBJECT_ID('LOS_BORBOTONES.get_butaca_id_by_avion_numero_butaca_tipo_butaca') 
 	DROP FUNCTION LOS_BORBOTONES.get_butaca_id_by_avion_numero_butaca_tipo_butaca;
 GO
 
+IF OBJECT_ID('LOS_BORBOTONES.get_ruta_aerea_id_by_ruta_aerea_codigo_ciudad_origen_ciudad_destino') IS NOT NULL
+	DROP FUNCTION LOS_BORBOTONES.get_ruta_aerea_id_by_ruta_aerea_codigo_ciudad_origen_ciudad_destino;
+GO
+
 ------------------------------ DROP DE LOS PROCEDURE ------------------------------
 
 IF OBJECT_ID('LOS_BORBOTONES.migracion_insert_clientes') IS NOT NULL
@@ -297,9 +301,7 @@ CREATE TABLE LOS_BORBOTONES.VUELO (
 	vuelo_fecha_salida datetime2(3),
 	vuelo_fecha_llegada datetime2(3),
 	vuelo_avion_id nvarchar(50),
-	vuelo_ruta_aerea_codigo decimal(18,0),
-	vuelo_ruta_aerea_ciu_origen INT,
-	vuelo_ruta_aerea_ciu_destino INT,
+	vuelo_ruta_aerea_id INT,
 	vuelo_aerolinea_codigo INT
 )
 
@@ -309,6 +311,7 @@ CREATE TABLE LOS_BORBOTONES.CIUDAD (
 )
 
 CREATE TABLE LOS_BORBOTONES.RUTA_AEREA (
+	ruta_aerea_id INT IDENTITY(1,1) NOT NULL,
 	ruta_aerea_codigo decimal(18,0) NOT NULL,
 	ruta_aerea_ciu_origen INT NOT NULL,
 	ruta_aerea_ciu_destino INT NOT NULL
@@ -396,7 +399,7 @@ ALTER TABLE LOS_BORBOTONES.AEROLINEA ADD CONSTRAINT PK_AEROLINEA_CODIGO PRIMARY 
 ALTER TABLE LOS_BORBOTONES.AVION ADD CONSTRAINT PK_AVION_ID PRIMARY KEY (avion_id);
 ALTER TABLE LOS_BORBOTONES.VUELO ADD CONSTRAINT PK_VUELO_CODIGO PRIMARY KEY (vuelo_codigo);
 ALTER TABLE LOS_BORBOTONES.CIUDAD ADD CONSTRAINT PK_CIUDAD_CODIGO PRIMARY KEY (ciudad_codigo);
-ALTER TABLE LOS_BORBOTONES.RUTA_AEREA ADD CONSTRAINT PK_RUTA_AEREA_ID PRIMARY KEY (ruta_aerea_codigo, ruta_aerea_ciu_origen, ruta_aerea_ciu_destino);
+ALTER TABLE LOS_BORBOTONES.RUTA_AEREA ADD CONSTRAINT PK_RUTA_AEREA_ID PRIMARY KEY (ruta_aerea_id);
 ALTER TABLE LOS_BORBOTONES.TIPO_BUTACA ADD CONSTRAINT PK_TIPO_BUTACA_CODIGO PRIMARY KEY (tipo_butaca_codigo);
 ALTER TABLE LOS_BORBOTONES.BUTACA ADD CONSTRAINT PK_BUTACA_ID PRIMARY KEY (butaca_id);
 ALTER TABLE LOS_BORBOTONES.GRUPO_HOTELARIO ADD CONSTRAINT PK_GRUPO_HOTELARIO_CODIGO PRIMARY KEY (grupo_hotelario_codigo);
@@ -413,7 +416,7 @@ GO
 
 ALTER TABLE LOS_BORBOTONES.VUELO ADD CONSTRAINT FK_VUELO_AVION_ID FOREIGN KEY (vuelo_avion_id) REFERENCES LOS_BORBOTONES.AVION(avion_id);
 ALTER TABLE LOS_BORBOTONES.VUELO ADD CONSTRAINT FK_VUELO_AEROLINEA_CODIGO FOREIGN KEY (vuelo_aerolinea_codigo) REFERENCES LOS_BORBOTONES.AEROLINEA(aerolinea_codigo);
-ALTER TABLE LOS_BORBOTONES.VUELO ADD CONSTRAINT FK_VUELO_RUTA_AEREA FOREIGN KEY (vuelo_ruta_aerea_codigo, vuelo_ruta_aerea_ciu_origen, vuelo_ruta_aerea_ciu_destino) REFERENCES LOS_BORBOTONES.RUTA_AEREA(ruta_aerea_codigo, ruta_aerea_ciu_origen, ruta_aerea_ciu_destino);
+ALTER TABLE LOS_BORBOTONES.VUELO ADD CONSTRAINT FK_VUELO_RUTA_AEREA FOREIGN KEY (vuelo_ruta_aerea_id) REFERENCES LOS_BORBOTONES.RUTA_AEREA(ruta_aerea_id);
 ALTER TABLE LOS_BORBOTONES.RUTA_AEREA ADD CONSTRAINT FK_RUTA_AEREA_CIUDAD_ORIGEN FOREIGN KEY (ruta_aerea_ciu_origen) REFERENCES LOS_BORBOTONES.CIUDAD(ciudad_codigo);
 ALTER TABLE LOS_BORBOTONES.RUTA_AEREA ADD CONSTRAINT FK_RUTA_AEREA_CIUDAD_DESTINO FOREIGN KEY (ruta_aerea_ciu_destino) REFERENCES LOS_BORBOTONES.CIUDAD(ciudad_codigo);
 ALTER TABLE LOS_BORBOTONES.BUTACA ADD CONSTRAINT FK_BUTACA_TIPO_BUTACA_CODIGO FOREIGN KEY (butaca_tipo_butaca_codigo) REFERENCES LOS_BORBOTONES.TIPO_BUTACA(tipo_butaca_codigo);
@@ -497,6 +500,17 @@ BEGIN
 	RETURN (select butaca_id
 	from LOS_BORBOTONES.BUTACA
 	where butaca_avion_id = @avion and butaca_numero = @butaca_numero and butaca_tipo_butaca_codigo = @tipo_butaca_codigo)
+END
+GO
+
+-- Obtengo ruta aerea id utilizando los codigos de ciudades, y a su vez, uso la otra funcion para obtener el codigo ciudad utilizando el detalle
+CREATE FUNCTION LOS_BORBOTONES.get_ruta_aerea_id_by_ruta_aerea_codigo_ciudad_origen_ciudad_destino(@ruta_aerea_codigo decimal(18,0), @ciudad_origen nvarchar(255), @ciudad_destino nvarchar(255))
+RETURNS INT
+AS
+BEGIN
+    RETURN (select ruta_aerea_id
+    from LOS_BORBOTONES.RUTA_AEREA
+    where ruta_aerea_codigo = @ruta_aerea_codigo and ruta_aerea_ciu_origen = LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(@ciudad_origen) and ruta_aerea_ciu_destino = LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(@ciudad_destino))
 END
 GO
 
@@ -679,14 +693,12 @@ GO
 
 CREATE PROC LOS_BORBOTONES.migracion_insert_vuelos AS
 BEGIN
-	INSERT INTO LOS_BORBOTONES.VUELO(vuelo_codigo, vuelo_fecha_salida, vuelo_fecha_llegada, vuelo_avion_id, vuelo_ruta_aerea_codigo, vuelo_ruta_aerea_ciu_origen, vuelo_ruta_aerea_ciu_destino, vuelo_aerolinea_codigo)
+	INSERT INTO LOS_BORBOTONES.VUELO(vuelo_codigo, vuelo_fecha_salida, vuelo_fecha_llegada, vuelo_avion_id, vuelo_ruta_aerea_id, vuelo_aerolinea_codigo)
 		SELECT 	VUELO_CODIGO,
 				VUELO_FECHA_SALUDA,
 				VUELO_FECHA_LLEGADA,
 				AVION_IDENTIFICADOR,
-				RUTA_AEREA_CODIGO,
-				LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_ORIG),
-				LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_DEST),
+				LOS_BORBOTONES.get_ruta_aerea_id_by_ruta_aerea_codigo_ciudad_origen_ciudad_destino(RUTA_AEREA_CODIGO, RUTA_AEREA_CIU_ORIG, RUTA_AEREA_CIU_DEST),
 				LOS_BORBOTONES.get_aerolinea_codigo_by_empresa_razon_social(EMPRESA_RAZON_SOCIAL)
 		FROM GD1C2020.gd_esquema.Maestra
 		WHERE VUELO_CODIGO IS NOT NULL
@@ -694,9 +706,7 @@ BEGIN
 				 VUELO_FECHA_SALUDA,
 				 VUELO_FECHA_LLEGADA,
 				 AVION_IDENTIFICADOR,
-				 RUTA_AEREA_CODIGO,
-				 LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_ORIG),
-				 LOS_BORBOTONES.get_codigo_ciudad_by_detalle_ciudad(RUTA_AEREA_CIU_DEST),
+				 LOS_BORBOTONES.get_ruta_aerea_id_by_ruta_aerea_codigo_ciudad_origen_ciudad_destino(RUTA_AEREA_CODIGO, RUTA_AEREA_CIU_ORIG, RUTA_AEREA_CIU_DEST),
 				 LOS_BORBOTONES.get_aerolinea_codigo_by_empresa_razon_social(EMPRESA_RAZON_SOCIAL)
 		ORDER BY VUELO_CODIGO, VUELO_FECHA_SALUDA
 END
