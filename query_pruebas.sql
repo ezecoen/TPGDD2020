@@ -1,7 +1,7 @@
 USE GD1C2020
 select * from LOS_BORBOTONES.DIMENSION_AEROLINEA
 
-SELECT * FROM LOS_BORBOTONES.HECHO_ESTADIA
+SELECT  hecho_estadia_mes_anio , sum(hecho_estadia_ganancia) as ganancia FROM LOS_BORBOTONES.HECHO_ESTADIA group by hecho_estadia_mes_anio
 
 select * from LOS_BORBOTONES.TIPO_HABITACION
 
