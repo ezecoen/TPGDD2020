@@ -1,15 +1,19 @@
 USE GD1C2020
+select * from LOS_BORBOTONES.DIMENSION_AEROLINEA
 
+SELECT * FROM LOS_BORBOTONES.HECHO_ESTADIA
 
 select * from LOS_BORBOTONES.TIPO_HABITACION
 
 select * from gd_esquema.Maestra
 
+select * from LOS_BORBOTONES.PASAJE
+
 select * from LOS_BORBOTONES.vuelo
 -- esta query te trae todos los pasajes que tienen que estar en la tabla de pasajes pero estan todos marcados como validos
 DELETE FROM LOS_BORBOTONES.PASAJE
 
-INSERT INTO LOS_BORBOTONES.PASAJE	
+INSERT INTO LOS_BORBOTONES.PASAJE
 	SELECT P.PASAJE_CODIGO,
 			P.PASAJE_COSTO,
 			P.PASAJE_PRECIO,
